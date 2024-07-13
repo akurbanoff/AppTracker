@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
 }
 
@@ -51,24 +52,42 @@ android {
 }
 
 dependencies {
+    with(libs) {
+        implementation(conopas.rv)
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+        // Hilt
+        implementation(hilt.android)
+        ksp(hilt.android.compiler)
 
-    implementation(libs.androidx.room.runtime)
-    ksp(libs.androidx.room.compiler)
+        // Room
+        implementation(room.ktx)
+        implementation(room.runtime)
+        ksp(room.compiler)
 
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+        // Coroutines
+        implementation(kotlin.android.coroutines)
+        implementation(kotlin.coroutines)
+
+        // Navigation
+        implementation(navigation.compose)
+        implementation(navigation.common)
+
+        implementation(material.icons.ext)
+        implementation(androidx.core.ktx)
+        implementation(androidx.lifecycle.runtime.ktx)
+        implementation(androidx.activity.compose)
+        implementation(platform(androidx.compose.bom))
+        implementation(androidx.ui)
+        implementation(androidx.ui.graphics)
+        implementation(androidx.ui.tooling.preview)
+        implementation(androidx.material3)
+        implementation(androidx.ui.text.google.fonts)
+        testImplementation(junit)
+        androidTestImplementation(androidx.junit)
+        androidTestImplementation(androidx.espresso.core)
+        androidTestImplementation(platform(androidx.compose.bom))
+        androidTestImplementation(androidx.ui.test.junit4)
+        debugImplementation(androidx.ui.tooling)
+        debugImplementation(androidx.ui.test.manifest)
+    }
 }
