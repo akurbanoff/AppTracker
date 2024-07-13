@@ -41,6 +41,9 @@ class AccessibilityEngine {
         }
     }
 
+    /**
+     * Just press device's home button
+     */
     private fun AccessibilityService.minimizeCurrentApp() {
         performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME)
     }
