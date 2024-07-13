@@ -1,6 +1,9 @@
 package ru.akurbanoff.apptracker.data.model
 
-data class ApplicationPreference(
+import androidx.room.Entity
+
+@Entity
+data class App(
     val packageName: String,
     var enabled: Boolean,
 )

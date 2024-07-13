@@ -4,14 +4,14 @@ import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent
 import ru.akurbanoff.apptracker.Notifications
 import ru.akurbanoff.apptracker.R
-import ru.akurbanoff.apptracker.data.model.ApplicationPreference
+import ru.akurbanoff.apptracker.data.model.App
 
 class AccessibilityEngine {
 
     private var notifications: Notifications? = null
 
     val appPreferences = listOf(
-        ApplicationPreference(packageName = "com.google.android.dialer", enabled = true)
+        App(packageName = "com.google.android.dialer", enabled = true)
     )
 
     /**
