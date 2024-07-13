@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import ru.akurbanoff.apptracker.ui.navigation.MainNavigationGraph
 import ru.akurbanoff.apptracker.ui.theme.AppTrackerTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppTrackerTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-
+                    MainNavigationGraph(Modifier.padding(innerPadding))
                 }
             }
         }
