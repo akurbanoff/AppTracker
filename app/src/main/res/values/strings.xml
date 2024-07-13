@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">AppTracker</string>
+
+    <!--    Accessibility    -->
+    <string name="accessibility_service_desc">Данный сервис обеспечивает возможность приложения видеть запущенные в данный момент приложения, а также закрывать их в случае, если лимит времени на использование исчерпан</string>
+    <string name="accessibility_service_label">AppTracer</string>
+
+    <!--    Notifications    -->
+    <string name="notification_limit_reached_title">Время вышло, приложение свернуто</string>
+    <string name="notification_limit_reached_message">Вы превысили установленный вами лимит времени в данном приложении</string>
 </resources>
