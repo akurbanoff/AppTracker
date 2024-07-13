@@ -2,7 +2,7 @@
     <string name="app_name">AppTracker</string>
 
     <!--    Accessibility    -->
-    <string name="accessibility_service_desc">Данный сервис обеспечивает возможность приложения видеть запущенные в данный момент приложения, а также закрывать их в случае, если лимит времени на использование исчерпан</string>
+    <string name="accessibility_service_desc">Данный сервис обеспечивает возможность видеть запущенные в данный момент приложения, а также закрывать их в случае, если лимит времени на использование исчерпан</string>
     <string name="accessibility_service_label">AppTracer</string>
 
     <!--    Notifications    -->
