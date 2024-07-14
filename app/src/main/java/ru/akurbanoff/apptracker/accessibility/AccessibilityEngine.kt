@@ -3,8 +3,8 @@ package ru.akurbanoff.apptracker.accessibility
 import android.accessibilityservice.AccessibilityService
 import android.content.Context
 import android.view.accessibility.AccessibilityEvent
-import ru.akurbanoff.apptracker.Notifications
 import ru.akurbanoff.apptracker.R
+import ru.akurbanoff.apptracker.domain.Notifications
 import java.util.Timer
 import javax.inject.Inject
 
