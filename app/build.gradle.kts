@@ -62,6 +62,9 @@ android {
 
 dependencies {
     with(libs) {
+        implementation(lifecycle.ext)
+        implementation(lifecycle.viewmodel.ktx)
+
         implementation(conopas.rv)
 
         // Hilt

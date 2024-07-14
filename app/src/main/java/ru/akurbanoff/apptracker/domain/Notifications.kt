@@ -1,4 +1,4 @@
-package ru.akurbanoff.apptracker
+package ru.akurbanoff.apptracker.domain
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -6,10 +6,13 @@ import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlin.random.Random
 
-class Notifications @Inject constructor(private val context: Context) {
+class Notifications @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
     private var random = Random(System.currentTimeMillis())
 

@@ -1,4 +1,4 @@
-package ru.akurbanoff.apptracker.di
+package ru.akurbanoff.apptracker.di.modules
 
 import android.content.Context
 import androidx.room.Room

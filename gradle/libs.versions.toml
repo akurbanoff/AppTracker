@@ -5,7 +5,9 @@ coreKtx = "1.10.1"
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
-lifecycleRuntimeKtx = "2.6.1"
+lifecycleRuntimeKtx = "2.8.3"
+lifecycleViewModelKtx = "2.8.3"
+lifecycleExt = "2.0.0"
 activityCompose = "1.8.0"
 composeBom = "2024.04.01"
 uiTextGoogleFonts = "1.6.8"
@@ -13,7 +15,7 @@ composeUtil = "1.6.3"
 navigation = "2.7.7"
 coroutines = "1.7.3"
 androidxCoreKtx = "1.12.0"
-androidxLifecycleKtx = "2.6.2"
+androidxLifecycleKtx = "2.8.3"
 room = "2.6.1"
 hilt = "2.48"
 conopas-rv = "1.0.4"
@@ -45,6 +47,8 @@ navigation-compose = { group = "androidx.navigation", name = "navigation-compose
 navigation-common = { group = "androidx.navigation", name = "navigation-common-ktx", version.ref = "navigation" }
 
 # Compose Core
+lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewModelKtx" }
+lifecycle-ext = { group = "androidx.lifecycle", name = "lifecycle-extensions", version.ref = "lifecycleExt" }
 material-icons-ext = { group = "androidx.compose.material", name = "material-icons-extended", version = "1.6.8" }
 compose-animation = { group = "androidx.compose.animation", name = "animation" }
 compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }

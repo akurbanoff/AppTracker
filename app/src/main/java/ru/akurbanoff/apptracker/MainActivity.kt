@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dagger.hilt.android.AndroidEntryPoint
+import ru.akurbanoff.apptracker.ui.app_list.AppListViewModel
 import ru.akurbanoff.apptracker.ui.navigation.MainNavigationGraph
 import ru.akurbanoff.apptracker.ui.theme.AppTrackerTheme
 

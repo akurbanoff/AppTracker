@@ -6,12 +6,16 @@ import dagger.Component
 import ru.akurbanoff.apptracker.AppTrackerApplication
 import ru.akurbanoff.apptracker.accessibility.AccessibilityEngine
 import ru.akurbanoff.apptracker.data.repository.AppsRepository
+import ru.akurbanoff.apptracker.di.modules.ServiceModule
+import ru.akurbanoff.apptracker.di.modules.DatabaseModule
+import ru.akurbanoff.apptracker.ui.app_list.AppListViewModel
+import ru.akurbanoff.apptracker.ui.service_settings.ServiceSettingsViewModel
 import javax.inject.Singleton
 
 @Component(
     modules = [
         DatabaseModule::class,
-        ServiceModule::class,
+        ServiceModule::class
     ]
 )
 @Singleton

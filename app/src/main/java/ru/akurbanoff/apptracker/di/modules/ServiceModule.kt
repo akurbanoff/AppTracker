@@ -1,12 +1,11 @@
-package ru.akurbanoff.apptracker.di
+package ru.akurbanoff.apptracker.di.modules
 
 import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import ru.akurbanoff.apptracker.Notifications
+import ru.akurbanoff.apptracker.domain.Notifications
 import ru.akurbanoff.apptracker.accessibility.AccessibilityEngine
 import ru.akurbanoff.apptracker.accessibility.RulesProcessor
 import ru.akurbanoff.apptracker.data.repository.AppsRepository
