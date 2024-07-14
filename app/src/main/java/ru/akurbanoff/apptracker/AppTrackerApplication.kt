@@ -1,17 +1,9 @@
 package ru.akurbanoff.apptracker
 
 import android.app.Application
-import android.os.Looper
 import dagger.hilt.android.HiltAndroidApp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import ru.akurbanoff.apptracker.data.repository.AppsRepository
 import ru.akurbanoff.apptracker.di.AppComponent
 import ru.akurbanoff.apptracker.di.DaggerAppComponent
-import ru.akurbanoff.apptracker.domain.model.App
-import ru.akurbanoff.apptracker.domain.model.Rule
-import javax.inject.Inject
 
 private const val s = "com.google.android.dialer"
 

@@ -3,28 +3,20 @@ package ru.akurbanoff.apptracker.accessibility
 import android.accessibilityservice.AccessibilityService
 import android.content.Context
 import android.view.accessibility.AccessibilityEvent
-import ru.akurbanoff.apptracker.AppTrackerApplication
 import ru.akurbanoff.apptracker.Notifications
+import ru.akurbanoff.apptracker.R
 import java.util.Timer
+import javax.inject.Inject
 
-class AccessibilityEngine(context: Context) {
+class AccessibilityEngine @Inject constructor(
+    private val notifications: Notifications,
+    private val rulesProcessor: RulesProcessor,
+) {
 
     private val timerTask = Task()
-
     private var timer: Timer? = null
-    private var notifications: Notifications? = null
-    private var rulesProcessor: RulesProcessor? = null
 
     init {
-        if (notifications == null) {
-            notifications = Notifications(context.applicationContext)
-        }
-
-        if (rulesProcessor == null) {
-//            val appsRepository = (context as AppTrackerApplication).appsRepository
-//            appsRepository?.let { rulesProcessor = RulesProcessor(it) }
-        }
-
         if (timer == null) {
             timer = Timer()
             timer?.schedule(timerTask, 1000)
@@ -32,8 +24,6 @@ class AccessibilityEngine(context: Context) {
     }
 
     fun onDestroy() {
-        rulesProcessor = null
-        notifications = null
         timer?.cancel()
         timer = null
     }
@@ -48,7 +38,14 @@ class AccessibilityEngine(context: Context) {
         val currentAppPackageName = source.packageName.toString()
 
         timerTask.packageName = currentAppPackageName
-        rulesProcessor?.processRules(currentAppPackageName) { service.minimizeCurrentApp() }
+        rulesProcessor.processRules(currentAppPackageName) {
+            notifications.displayNotification(
+                R.string.notification_limit_reached_title,
+                R.string.notification_limit_reached_message,
+                R.drawable.ic_launcher_background
+            )
+            service.minimizeCurrentApp()
+        }
     }
 
     /**
@@ -60,19 +57,23 @@ class AccessibilityEngine(context: Context) {
 
     private inner class Task : java.util.TimerTask() {
 
+        @Volatile
         var secondsInApp = 0
         var packageName: String? = null
             set(value) {
-                if (packageName != value) {
-                    rulesProcessor?.registerInAppTime(packageName ?: return, secondsInApp * ONE_SECOND)
-                    secondsInApp = 0
-                }
-
+                onPackageNameUpdate(value)
                 field = value
             }
 
         override fun run() {
             secondsInApp += 1
+        }
+
+        private fun onPackageNameUpdate(newValue: String?) {
+            if (packageName != newValue) {
+                rulesProcessor.registerInAppTime(newValue ?: return, secondsInApp * ONE_SECOND)
+                secondsInApp = 0
+            }
         }
     }
 

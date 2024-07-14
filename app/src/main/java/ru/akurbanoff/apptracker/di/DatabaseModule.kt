@@ -19,7 +19,7 @@ class DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideRoomDatabase(@ApplicationContext context: Context): AppTrackerDatabase =
+    fun provideRoomDatabase(context: Context): AppTrackerDatabase =
         Room.databaseBuilder(context, AppTrackerDatabase::class.java, "database")
             .build()
 
