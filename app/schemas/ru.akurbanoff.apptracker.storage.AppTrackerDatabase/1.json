@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "49b651d5523c7742c370bf30d09fa236",
+    "identityHash": "2f6b3f0d009129fb77df80bcbc7a205a",
     "entities": [
       {
         "tableName": "AppDto",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `packageName` TEXT NOT NULL, `enabled` INTEGER NOT NULL, PRIMARY KEY(`id`, `packageName`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `packageName` TEXT NOT NULL, `enabled` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -30,8 +30,7 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "id",
-            "packageName"
+            "id"
           ]
         },
         "indices": [],
@@ -111,7 +110,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '49b651d5523c7742c370bf30d09fa236')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2f6b3f0d009129fb77df80bcbc7a205a')"
     ]
   }
 }
