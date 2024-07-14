@@ -30,9 +30,8 @@ class RulesProcessor @Inject constructor(
         }
     }
 
-    fun registerInAppTime(packageName: String, timeInApp: Int) = coroutineScope.launch {
-        val appState = appsRepository.getAppStateFor(packageName) ?: return@launch
-        appsRepository.updateAppState(appState.copy(timeInApp = appState.timeInApp + timeInApp))
+    fun registerInAppTime(s: String, secondsInApp: Int) = coroutineScope.launch {
+        appsRepository.registerInAppTime(s, secondsInApp)
     }
 
 }
