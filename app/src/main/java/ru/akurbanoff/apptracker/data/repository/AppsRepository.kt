@@ -1,5 +1,6 @@
 package ru.akurbanoff.apptracker.data.repository
 
+import androidx.room.withTransaction
 import ru.akurbanoff.apptracker.data.mapper.AppAppDtoMapper
 import ru.akurbanoff.apptracker.data.mapper.AppDtoAppMapper
 import ru.akurbanoff.apptracker.data.mapper.AppStateAppStateDtoMapper
@@ -11,12 +12,14 @@ import ru.akurbanoff.apptracker.domain.model.App
 import ru.akurbanoff.apptracker.domain.model.AppState
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
 import ru.akurbanoff.apptracker.domain.model.Rule
+import ru.akurbanoff.apptracker.storage.AppTrackerDatabase
 import ru.akurbanoff.apptracker.storage.dao.AppStatesDao
 import ru.akurbanoff.apptracker.storage.dao.AppsDao
 import ru.akurbanoff.apptracker.storage.dao.RulesDao
 import javax.inject.Inject
 
 class AppsRepository @Inject constructor(
+    private val database: AppTrackerDatabase,
     private val appsDao: AppsDao,
     private val rulesDao: RulesDao,
     private val appStatesDao: AppStatesDao,
@@ -58,5 +61,10 @@ class AppsRepository @Inject constructor(
 
     suspend fun getAppStates() = appStatesDao.getAppState()
         .map { appStateDtoAppStateMapper.invoke(it) }
+
+    suspend fun registerInAppTime(packageName: String, timeInApp: Int) = database.withTransaction {
+        val appState = getAppStateFor(packageName) ?: AppState(packageName, timeInApp)
+        updateAppState(appState.copy(timeInApp = appState.timeInApp + timeInApp))
+    }
 
 }

@@ -1,7 +1,6 @@
 package ru.akurbanoff.apptracker.accessibility
 
 import android.accessibilityservice.AccessibilityService
-import android.content.Context
 import android.view.accessibility.AccessibilityEvent
 import ru.akurbanoff.apptracker.Notifications
 import ru.akurbanoff.apptracker.R
@@ -19,7 +18,7 @@ class AccessibilityEngine @Inject constructor(
     init {
         if (timer == null) {
             timer = Timer()
-            timer?.schedule(timerTask, 1000)
+            timer?.schedule(timerTask, 0, 1000)
         }
     }
 
@@ -67,17 +66,18 @@ class AccessibilityEngine @Inject constructor(
 
         override fun run() {
             secondsInApp += 1
+            updateTime()
         }
 
         private fun onPackageNameUpdate(newValue: String?) {
             if (packageName != newValue) {
-                rulesProcessor.registerInAppTime(newValue ?: return, secondsInApp * ONE_SECOND)
+                updateTime()
                 secondsInApp = 0
             }
         }
     }
 
-    private companion object {
-        private const val ONE_SECOND = 1000
+    private fun Task.updateTime() {
+        rulesProcessor.registerInAppTime(packageName ?: return, secondsInApp)
     }
 }
