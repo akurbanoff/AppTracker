@@ -6,9 +6,10 @@ import kotlinx.coroutines.launch
 import ru.akurbanoff.apptracker.data.repository.AppsRepository
 import ru.akurbanoff.apptracker.domain.model.Rule
 import java.time.LocalTime
+import javax.inject.Inject
 
 
-class RulesProcessor(
+class RulesProcessor @Inject constructor(
     private val appsRepository: AppsRepository,
 ) {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)

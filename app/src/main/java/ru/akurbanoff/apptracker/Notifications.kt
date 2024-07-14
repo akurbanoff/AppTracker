@@ -6,9 +6,10 @@ import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
+import javax.inject.Inject
 import kotlin.random.Random
 
-class Notifications(private val context: Context) {
+class Notifications @Inject constructor(private val context: Context) {
 
     private var random = Random(System.currentTimeMillis())
 
