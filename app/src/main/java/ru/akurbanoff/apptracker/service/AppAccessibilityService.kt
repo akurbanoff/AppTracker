@@ -6,11 +6,21 @@ import ru.akurbanoff.apptracker.accessibility.AccessibilityEngine
 
 class AppAccessibilityService : AccessibilityService() {
 
-    // todo inject via DI
-    private val accessibilityEngine = AccessibilityEngine()
+    private var accessibilityEngine: AccessibilityEngine? = null
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        accessibilityEngine.processEvent(this, event ?: return)
+
+        if (accessibilityEngine == null) {
+            accessibilityEngine = AccessibilityEngine(applicationContext)
+        }
+
+        accessibilityEngine?.processEvent(this, event ?: return)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        accessibilityEngine?.onDestroy()
+        accessibilityEngine = null
     }
 
     override fun onInterrupt() {}
