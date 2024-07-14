@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.hilt.android)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.kapt)
 }
 
 android {
@@ -36,6 +36,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+    kapt {
+        arguments {
+            arg("room.schemaLocation", "$projectDir/schemas")
+        }
+    }
     kotlinOptions {
         jvmTarget = "1.8"
     }
@@ -50,6 +55,9 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    hilt {
+        enableAggregatingTask = true
+    }
 }
 
 dependencies {
@@ -58,12 +66,12 @@ dependencies {
 
         // Hilt
         implementation(hilt.android)
-        ksp(hilt.android.compiler)
+        kapt(hilt.android.compiler)
 
         // Room
         implementation(room.ktx)
         implementation(room.runtime)
-        ksp(room.compiler)
+        kapt(room.compiler)
 
         // Coroutines
         implementation(kotlin.android.coroutines)

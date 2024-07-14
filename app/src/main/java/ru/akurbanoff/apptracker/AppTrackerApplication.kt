@@ -7,6 +7,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ru.akurbanoff.apptracker.data.repository.AppsRepository
+import ru.akurbanoff.apptracker.di.AppComponent
+import ru.akurbanoff.apptracker.di.DaggerAppComponent
 import ru.akurbanoff.apptracker.domain.model.App
 import ru.akurbanoff.apptracker.domain.model.Rule
 import javax.inject.Inject
@@ -15,6 +17,14 @@ private const val s = "com.google.android.dialer"
 
 @HiltAndroidApp
 class AppTrackerApplication : Application() {
+
+    lateinit var appComponent: AppComponent
+
+    override fun onCreate() {
+        super.onCreate()
+
+        appComponent = DaggerAppComponent.factory().create(this)
+    }
 
 //    @Inject
 //    var appsRepository: AppsRepository? = null
