@@ -3,7 +3,6 @@ package ru.akurbanoff.apptracker.accessibility
 import android.accessibilityservice.AccessibilityService
 import android.content.Context
 import android.view.accessibility.AccessibilityEvent
-import ru.akurbanoff.apptracker.AppTrackerApplication
 import ru.akurbanoff.apptracker.Notifications
 import java.util.Timer
 
@@ -63,16 +62,19 @@ class AccessibilityEngine(context: Context) {
         var secondsInApp = 0
         var packageName: String? = null
             set(value) {
-                if (packageName != value) {
-                    rulesProcessor?.registerInAppTime(packageName ?: return, secondsInApp * ONE_SECOND)
-                    secondsInApp = 0
-                }
-
+                onPackageNameUpdate(value)
                 field = value
             }
 
         override fun run() {
             secondsInApp += 1
+        }
+
+        private fun onPackageNameUpdate(newValue: String?) {
+            if (packageName != newValue) {
+                rulesProcessor?.registerInAppTime(newValue ?: return, secondsInApp * ONE_SECOND)
+                secondsInApp = 0
+            }
         }
     }
 

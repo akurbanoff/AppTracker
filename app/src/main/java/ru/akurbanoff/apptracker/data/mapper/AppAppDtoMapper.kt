@@ -6,8 +6,8 @@ import javax.inject.Inject
 
 class AppAppDtoMapper @Inject constructor() {
     operator fun invoke(app: App): AppDto = AppDto(
-        id = app.id,
         packageName = app.packageName,
-        enabled = app.enabled
+        enabled = app.enabled,
+        id = app.id,
     )
 }
