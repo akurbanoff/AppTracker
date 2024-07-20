@@ -21,7 +21,8 @@ class AppListFragment(
     lateinit var appListViewModel: AppListViewModel
 
     @Composable
-    fun main() {
+    fun main(
+    ) {
 
         appListViewModel = viewModel()
 
