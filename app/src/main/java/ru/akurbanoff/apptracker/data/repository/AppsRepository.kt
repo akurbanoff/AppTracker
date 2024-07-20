@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.ResolveInfo
 import androidx.core.graphics.drawable.toBitmap
 import androidx.room.withTransaction
+import dagger.hilt.android.qualifiers.ApplicationContext
 import ru.akurbanoff.apptracker.data.mapper.AppAppDtoMapper
 import ru.akurbanoff.apptracker.data.mapper.AppDtoAppMapper
 import ru.akurbanoff.apptracker.data.mapper.AppStateAppStateDtoMapper
@@ -23,7 +24,7 @@ import javax.inject.Inject
 
 
 class AppsRepository @Inject constructor(
-    private val context: Context,
+    @ApplicationContext private val context: Context,
     private val database: AppTrackerDatabase,
     private val appsDao: AppsDao,
     private val rulesDao: RulesDao,

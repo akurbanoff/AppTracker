@@ -1,6 +1,5 @@
 package ru.akurbanoff.apptracker.ui.app_list
 
-import android.graphics.drawable.Drawable
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,54 +22,40 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.compose_recyclerview.ComposeRecyclerView
-import ru.akurbanoff.apptracker.AppTrackerApplication
 import ru.akurbanoff.apptracker.R
-import ru.akurbanoff.apptracker.di.getApplicationComponent
-import ru.akurbanoff.apptracker.domain.model.App
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
-import ru.akurbanoff.apptracker.domain.model.Rule
 import ru.akurbanoff.apptracker.ui.utils.LifeScreen
-import javax.inject.Inject
 
 class AppListFragment(
-    private val navController: NavHostController
+    private val navController: NavHostController,
 ) {
     lateinit var appListViewModel: AppListViewModel
 
     @Composable
-    fun main(
-    ) {
-        appListViewModel = getApplicationComponent(LocalContext.current).appListViewModel
-
+    fun main() {
+        appListViewModel = hiltViewModel<AppListViewModel>()//getApplicationComponent(LocalContext.current).appListViewModel
         val state by appListViewModel.state.collectAsState()
+        appListViewModel.getApps()
 
         BackHandler {
             navController.popBackStack()
         }
 
-        LifeScreen(
-            onResume = {
-                appListViewModel.getApps()
-            }
-        )
+//        LifeScreen(
+//            onResume = {
+//                appListViewModel.getApps()
+//            }
+//        )
 
         ScreenContent(state = state)
     }
@@ -78,7 +63,7 @@ class AppListFragment(
     @Composable
     private fun ScreenContent(
         modifier: Modifier = Modifier,
-        state: AppListViewModel.AppListState
+        state: AppListViewModel.AppListState,
     ) {
         Column(
             modifier = modifier
@@ -96,7 +81,7 @@ class AppListFragment(
         Column(
             modifier = modifier
                 .fillMaxWidth()
-        ){
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -106,7 +91,7 @@ class AppListFragment(
                     text = "Apps"
                 )
                 Icon(
-                    imageVector= Icons.Default.Search,
+                    imageVector = Icons.Default.Search,
                     contentDescription = null
                 )
             }
@@ -134,16 +119,9 @@ class AppListFragment(
     @Composable
     private fun AppList(
         modifier: Modifier = Modifier,
-        apps: List<AppWithRules>
+        apps: List<AppWithRules>,
     ) {
-//        ComposeRecyclerView(
-//            modifier = modifier.fillMaxWidth(),
-//            items = apps,
-//            itemBuilder = { item, index ->
-//                AppItem(item = item, index = index)
-//            }
-//        )
-        LazyColumn{
+        LazyColumn {
             items(apps) { app ->
                 AppItem(item = app)
             }
@@ -154,7 +132,7 @@ class AppListFragment(
     @Composable
     private fun AppItem(
         modifier: Modifier = Modifier,
-        item: AppWithRules
+        item: AppWithRules,
     ) {
         Row(
             modifier = modifier
@@ -169,7 +147,8 @@ class AppListFragment(
             ) {
                 Icon(
                     modifier = Modifier.size(34.dp),
-                    bitmap = item.app.icon?.asImageBitmap() ?: ImageBitmap.imageResource(id = R.drawable.ic_launcher_foreground),
+                    bitmap = item.app.icon?.asImageBitmap()
+                        ?: ImageBitmap.imageResource(id = R.drawable.ic_launcher_foreground),
                     contentDescription = null
                 )
                 Spacer(

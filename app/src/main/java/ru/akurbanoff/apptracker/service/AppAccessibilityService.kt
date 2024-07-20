@@ -18,13 +18,13 @@ class AppAccessibilityService : AccessibilityService() {
     private var appsRepository: AppsRepository? = null
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (accessibilityEngine == null) {
-            accessibilityEngine = getApplicationComponent(applicationContext).accessibilityEngine
-        }
+//        if (accessibilityEngine == null) {
+//            accessibilityEngine = getApplicationComponent(applicationContext).accessibilityEngine
+//        }
 
-        if (appsRepository == null) {
-            appsRepository = getApplicationComponent(applicationContext).appsRepository
-        }
+//        if (appsRepository == null) {
+//            appsRepository = getApplicationComponent(applicationContext).appsRepository
+//        }
 
         accessibilityEngine?.processEvent(this, event ?: return)
     }

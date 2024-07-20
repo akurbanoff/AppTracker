@@ -14,6 +14,7 @@ import ru.akurbanoff.apptracker.data.repository.AppsRepository
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
 import javax.inject.Inject
 
+@HiltViewModel
 class AppListViewModel @Inject constructor(
      private val appsRepository: AppsRepository
 ): ViewModel(){

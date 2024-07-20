@@ -84,6 +84,8 @@ dependencies {
         implementation(navigation.compose)
         implementation(navigation.common)
 
+        implementation("androidx.hilt:hilt-navigation-compose:1.0.0-alpha02")
+
         implementation(material.icons.ext)
         implementation(androidx.core.ktx)
         implementation(androidx.lifecycle.runtime.ktx)

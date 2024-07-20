@@ -8,6 +8,7 @@ import ru.akurbanoff.apptracker.accessibility.AccessibilityEngine
 import ru.akurbanoff.apptracker.data.repository.AppsRepository
 import ru.akurbanoff.apptracker.di.modules.ServiceModule
 import ru.akurbanoff.apptracker.di.modules.DatabaseModule
+import ru.akurbanoff.apptracker.domain.Notifications
 import ru.akurbanoff.apptracker.ui.app_list.AppListViewModel
 import ru.akurbanoff.apptracker.ui.service_settings.ServiceSettingsViewModel
 import javax.inject.Singleton
@@ -20,11 +21,8 @@ import javax.inject.Singleton
 )
 @Singleton
 interface AppComponent {
+//    val appsRepository: AppsRepository
 
-    val accessibilityEngine: AccessibilityEngine
-    val appsRepository: AppsRepository
-
-    val appListViewModel: AppListViewModel
     val serviceSettingsViewModel: ServiceSettingsViewModel
 
     @Component.Factory
