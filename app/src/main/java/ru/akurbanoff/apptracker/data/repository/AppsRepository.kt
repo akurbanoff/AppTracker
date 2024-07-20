@@ -1,11 +1,14 @@
 package ru.akurbanoff.apptracker.data.repository
 
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ResolveInfo
+import androidx.core.graphics.drawable.toBitmap
 import androidx.room.withTransaction
 import ru.akurbanoff.apptracker.data.mapper.AppAppDtoMapper
 import ru.akurbanoff.apptracker.data.mapper.AppDtoAppMapper
 import ru.akurbanoff.apptracker.data.mapper.AppStateAppStateDtoMapper
 import ru.akurbanoff.apptracker.data.mapper.AppStateDtoAppStateMapper
-import ru.akurbanoff.apptracker.data.mapper.AppWithRulesDtoMapper
 import ru.akurbanoff.apptracker.data.mapper.RuleDtoRuleMapper
 import ru.akurbanoff.apptracker.data.mapper.RuleRuleDtoMapper
 import ru.akurbanoff.apptracker.domain.model.App
@@ -18,7 +21,9 @@ import ru.akurbanoff.apptracker.storage.dao.AppsDao
 import ru.akurbanoff.apptracker.storage.dao.RulesDao
 import javax.inject.Inject
 
+
 class AppsRepository @Inject constructor(
+    private val context: Context,
     private val database: AppTrackerDatabase,
     private val appsDao: AppsDao,
     private val rulesDao: RulesDao,
@@ -27,13 +32,33 @@ class AppsRepository @Inject constructor(
     private val appAppDtoMapper: AppAppDtoMapper,
     private val ruleDtoRuleMapper: RuleDtoRuleMapper,
     private val ruleRuleDtoMapper: RuleRuleDtoMapper,
-    private val appWithRulesDtoMapper: AppWithRulesDtoMapper,
     private val appStateAppStateDtoMapper: AppStateAppStateDtoMapper,
     private val appStateDtoAppStateMapper: AppStateDtoAppStateMapper,
 ) {
-
     suspend fun getAllApps(): List<AppWithRules> {
-        return appsDao.getAppsWithRules().map { appWithRulesDtoMapper.invoke(it) }
+        val installedApps = getInstalledApps()
+        val result = mutableListOf<AppWithRules>()
+        val packageManager = context.packageManager
+        val savedAppConfigs = appsDao.getApps().map { appDtoAppMapper.invoke(it) }
+
+        for (app in installedApps) {
+            val packageName = app.activityInfo.packageName
+            val appName = app.loadLabel(packageManager)?.toString() ?: packageName
+            val savedApp = savedAppConfigs.firstOrNull { it.packageName == packageName }
+            val appIcon = packageManager.getApplicationIcon(packageName).toBitmap()
+
+            if (savedApp != null) {
+                val updatedApp = savedApp.copy(name = appName, icon = appIcon)
+                val rules = rulesDao.getRulesByAppId(updatedApp.id).map { ruleDtoRuleMapper.invoke(it) }
+                result.add(AppWithRules(updatedApp, rules))
+            } else {
+                val newApp = App(-1, appName, appIcon, packageName, false)
+                val newAppWithRules = AppWithRules(app = newApp, rules = listOf())
+                result.add(newAppWithRules)
+            }
+        }
+
+        return result.toList()
     }
 
     suspend fun updateApp(app: App) {
@@ -67,4 +92,9 @@ class AppsRepository @Inject constructor(
         updateAppState(appState.copy(timeInApp = appState.timeInApp + timeInApp))
     }
 
+    private fun getInstalledApps(): List<ResolveInfo> {
+        val mainIntent = Intent(Intent.ACTION_MAIN, null)
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER)
+        return context.packageManager.queryIntentActivities(mainIntent, 0)
+    }
 }
