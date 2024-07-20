@@ -13,4 +13,5 @@
     <!-- AppListFragment -->
     <string name="all_apps">All apps</string>
     <string name="all_apps_info">To select all apps, turn on the switch</string>
+    <string name="amount_of_apps">Number of selected applications</string>
 </resources>

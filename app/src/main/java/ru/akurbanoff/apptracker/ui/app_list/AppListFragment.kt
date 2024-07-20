@@ -27,6 +27,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
@@ -52,15 +55,21 @@ class AppListFragment(
     fun Main() {
         appListViewModel = hiltViewModel<AppListViewModel>()
         val state by appListViewModel.state.collectAsState()
-        //appListViewModel.getApps()
 
         BackHandler {
             navController.popBackStack()
         }
 
+        LifeScreen(
+            onResume = {
+                appListViewModel.getApps()
+            }
+        )
+
         ScreenContent(
             apps = state.apps,
-            isAllAppsEnabled = state.isAllAppsEnabled ?: false
+            isAllAppsEnabled = state.isAllAppsEnabled,
+            amountOfEnabledApps = state.amountOfEnabledApps
         )
     }
 
@@ -69,19 +78,24 @@ class AppListFragment(
         modifier: Modifier = Modifier,
         apps: UiState,
         isAllAppsEnabled: Boolean,
+        amountOfEnabledApps: Int
     ) {
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            TopScreenPart(isAllAppsEnabled = isAllAppsEnabled)
-            AppList(apps = apps)
+            TopScreenPart(isAllAppsEnabled = isAllAppsEnabled, amountOfEnabledApps = amountOfEnabledApps)
+            AppList(apps = apps, isAllAppsEnabled = isAllAppsEnabled)
         }
     }
 
     @Composable
-    private fun TopScreenPart(modifier: Modifier = Modifier, isAllAppsEnabled: Boolean) {
+    private fun TopScreenPart(
+        modifier: Modifier = Modifier,
+        isAllAppsEnabled: Boolean,
+        amountOfEnabledApps: Int,
+    ) {
         val context = LocalContext.current
         Column(
             modifier = modifier
@@ -93,11 +107,13 @@ class AppListFragment(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Apps"
+                    text = "Apps",
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize
                 )
                 Icon(
                     imageVector= Icons.Default.Search,
-                    contentDescription = null
+                    contentDescription = null,
+                    modifier = Modifier.size(34.dp)
                 )
             }
             Row(
@@ -108,7 +124,8 @@ class AppListFragment(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = context.getString(R.string.all_apps)
+                    text = context.getString(R.string.all_apps),
+                    fontSize = MaterialTheme.typography.titleLarge.fontSize
                 )
                 Switch(
                     checked = isAllAppsEnabled,
@@ -116,15 +133,31 @@ class AppListFragment(
                 )
             }
             Text(
-                text = context.getString(R.string.all_apps_info)
+                text = context.getString(R.string.all_apps_info),
+                fontSize = MaterialTheme.typography.titleSmall.fontSize
             )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = context.getString(R.string.amount_of_apps),
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize
+                )
+                Text(
+                    text = amountOfEnabledApps.toString(),
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize
+                )
+            }
         }
     }
 
     @Composable
     private fun AppList(
         modifier: Modifier = Modifier,
-        apps: UiState
+        apps: UiState,
+        isAllAppsEnabled: Boolean
     ) {
         when (apps) {
             is UiState.Error -> TODO()
@@ -132,13 +165,15 @@ class AppListFragment(
                 Loading()
             }
             is UiState.Success<*> -> {
-                ComposeRecyclerView(
-                    modifier = modifier.fillMaxWidth(),
-                    items = apps.data as? List<AppWithRules> ?: emptyList(),
-                    itemBuilder = { item, _ ->
-                        AppItem(item = item)
-                    }
-                )
+                if(!isAllAppsEnabled){
+                    ComposeRecyclerView(
+                        modifier = modifier.fillMaxWidth(),
+                        items = apps.data as? List<AppWithRules> ?: emptyList(),
+                        itemBuilder = { item, position->
+                            AppItem(item = item, position = position)
+                        }
+                    )
+                }
             }
         }
     }
@@ -146,8 +181,11 @@ class AppListFragment(
     @Composable
     private fun AppItem(
         modifier: Modifier = Modifier,
-        item: AppWithRules
+        item: AppWithRules,
+        position: Int
     ) {
+        var enabled by remember(position) { mutableStateOf(item.app.enabled) }
+
         Row(
             modifier = modifier
                 .fillMaxWidth()
@@ -170,13 +208,14 @@ class AppListFragment(
                 )
                 Text(
                     text = item.app.name ?: "",
-                    fontSize = MaterialTheme.typography.titleLarge.fontSize
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize
                 )
             }
             Checkbox(
-                checked = item.app.enabled,
+                checked = enabled,
                 onCheckedChange = {
-                    //appListViewModel.checkApp(item)
+                    enabled = !enabled
+                    appListViewModel.checkApp(item, enabled)
                 }
             )
         }

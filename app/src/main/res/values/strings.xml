@@ -12,4 +12,5 @@
     <!-- AppListFragment -->
     <string name="all_apps">Все приложения</string>
     <string name="all_apps_info">Чтобы выбрать все приложения, включите переключатель</string>
+    <string name="amount_of_apps">Количество выбранных приложений</string>
 </resources>
