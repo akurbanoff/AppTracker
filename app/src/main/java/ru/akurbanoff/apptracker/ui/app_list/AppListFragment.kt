@@ -1,7 +1,10 @@
 package ru.akurbanoff.apptracker.ui.app_list
 
+import android.graphics.drawable.Drawable
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,8 +18,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,56 +37,56 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.compose_recyclerview.ComposeRecyclerView
 import ru.akurbanoff.apptracker.R
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
 import ru.akurbanoff.apptracker.ui.utils.LifeScreen
+import ru.akurbanoff.apptracker.ui.utils.UiState
 
 class AppListFragment(
     private val navController: NavHostController,
 ) {
-    lateinit var appListViewModel: AppListViewModel
+    private lateinit var appListViewModel: AppListViewModel
 
     @Composable
-    fun main() {
-        appListViewModel = hiltViewModel<AppListViewModel>()//getApplicationComponent(LocalContext.current).appListViewModel
+    fun Main() {
+        appListViewModel = hiltViewModel<AppListViewModel>()
         val state by appListViewModel.state.collectAsState()
-        appListViewModel.getApps()
+        //appListViewModel.getApps()
 
         BackHandler {
             navController.popBackStack()
         }
 
-//        LifeScreen(
-//            onResume = {
-//                appListViewModel.getApps()
-//            }
-//        )
-
-        ScreenContent(state = state)
+        ScreenContent(
+            apps = state.apps,
+            isAllAppsEnabled = state.isAllAppsEnabled ?: false
+        )
     }
 
     @Composable
     private fun ScreenContent(
         modifier: Modifier = Modifier,
-        state: AppListViewModel.AppListState,
+        apps: UiState,
+        isAllAppsEnabled: Boolean,
     ) {
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            TopScreenPart(isAllAppsEnabled = state.isAllAppsEnabled)
-            AppList(apps = state.apps)
+            TopScreenPart(isAllAppsEnabled = isAllAppsEnabled)
+            AppList(apps = apps)
         }
     }
 
     @Composable
-    fun TopScreenPart(modifier: Modifier = Modifier, isAllAppsEnabled: Boolean) {
+    private fun TopScreenPart(modifier: Modifier = Modifier, isAllAppsEnabled: Boolean) {
         val context = LocalContext.current
         Column(
             modifier = modifier
                 .fillMaxWidth()
-        ) {
+        ){
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -91,7 +96,7 @@ class AppListFragment(
                     text = "Apps"
                 )
                 Icon(
-                    imageVector = Icons.Default.Search,
+                    imageVector= Icons.Default.Search,
                     contentDescription = null
                 )
             }
@@ -119,20 +124,29 @@ class AppListFragment(
     @Composable
     private fun AppList(
         modifier: Modifier = Modifier,
-        apps: List<AppWithRules>,
+        apps: UiState
     ) {
-        LazyColumn {
-            items(apps) { app ->
-                AppItem(item = app)
+        when (apps) {
+            is UiState.Error -> TODO()
+            UiState.Loading -> {
+                Loading()
             }
-
+            is UiState.Success<*> -> {
+                ComposeRecyclerView(
+                    modifier = modifier.fillMaxWidth(),
+                    items = apps.data as? List<AppWithRules> ?: emptyList(),
+                    itemBuilder = { item, _ ->
+                        AppItem(item = item)
+                    }
+                )
+            }
         }
     }
 
     @Composable
     private fun AppItem(
         modifier: Modifier = Modifier,
-        item: AppWithRules,
+        item: AppWithRules
     ) {
         Row(
             modifier = modifier
@@ -145,7 +159,7 @@ class AppListFragment(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Icon(
+                Image(
                     modifier = Modifier.size(34.dp),
                     bitmap = item.app.icon?.asImageBitmap()
                         ?: ImageBitmap.imageResource(id = R.drawable.ic_launcher_foreground),
@@ -159,12 +173,22 @@ class AppListFragment(
                     fontSize = MaterialTheme.typography.titleLarge.fontSize
                 )
             }
-
             Checkbox(
                 checked = item.app.enabled,
                 onCheckedChange = {
-                    appListViewModel.checkApp(item)
+                    //appListViewModel.checkApp(item)
                 }
+            )
+        }
+    }
+
+    @Composable
+    private fun Loading(modifier: Modifier = Modifier) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center)
             )
         }
     }
