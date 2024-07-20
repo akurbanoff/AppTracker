@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AppTracker</string>
+
+    <!--    Accessibility    -->
+    <string name="accessibility_service_desc">This service provides the ability to see currently running applications, as well as close them if the time limit for use has been exhausted</string>
+    <string name="accessibility_service_label">AppTracker</string>
+
+    <!--    Notifications    -->
+    <string name="notification_limit_reached_title">Time is up, the application is minimized</string>
+    <string name="notification_limit_reached_message">You have exceeded your time limit in this application</string>
+
+    <!-- AppListFragment -->
+    <string name="all_apps">All apps</string>
+    <string name="all_apps_info">To select all apps, turn on the switch</string>
+    <string name="amount_of_apps">Number of selected applications</string>
+</resources>

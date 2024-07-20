@@ -38,7 +38,7 @@ fun MainNavigationGraph(modifier: Modifier = Modifier) {
             }
 
             composable(NavDestinations.AppList.route) {
-                AppListFragment(navigator).main()
+                AppListFragment(navigator).Main()
             }
 
             composable(NavDestinations.Statistics.route) {

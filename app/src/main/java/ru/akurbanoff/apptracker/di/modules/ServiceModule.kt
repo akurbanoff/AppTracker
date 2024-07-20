@@ -4,6 +4,7 @@ import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import ru.akurbanoff.apptracker.domain.Notifications
 import ru.akurbanoff.apptracker.accessibility.AccessibilityEngine
@@ -17,7 +18,7 @@ class ServiceModule {
 
     @Provides
     @Singleton
-    fun provideNotifications(context: Context): Notifications = Notifications(context)
+    fun provideNotifications(@ApplicationContext context: Context): Notifications = Notifications(context)
 
 
     @Provides
@@ -31,5 +32,4 @@ class ServiceModule {
     fun provideAccessibilityEngine(notifications: Notifications, rulesProcessor: RulesProcessor): AccessibilityEngine {
         return AccessibilityEngine(notifications, rulesProcessor)
     }
-
 }
