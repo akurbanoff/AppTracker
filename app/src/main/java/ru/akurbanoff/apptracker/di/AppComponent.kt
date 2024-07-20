@@ -24,6 +24,9 @@ interface AppComponent {
     val accessibilityEngine: AccessibilityEngine
     val appsRepository: AppsRepository
 
+    val appListViewModel: AppListViewModel
+    val serviceSettingsViewModel: ServiceSettingsViewModel
+
     @Component.Factory
     interface Factory {
         fun create(

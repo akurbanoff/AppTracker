@@ -8,4 +8,8 @@
     <!--    Notifications    -->
     <string name="notification_limit_reached_title">Время вышло, приложение свернуто</string>
     <string name="notification_limit_reached_message">Вы превысили установленный вами лимит времени в данном приложении</string>
+
+    <!-- AppListFragment -->
+    <string name="all_apps">Все приложения</string>
+    <string name="all_apps_info">Чтобы выбрать все приложения, включите переключатель</string>
 </resources>
