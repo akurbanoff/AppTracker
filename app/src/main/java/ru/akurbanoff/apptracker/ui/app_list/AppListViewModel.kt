@@ -67,7 +67,7 @@ class AppListViewModel @Inject constructor(
     }
 
     fun onSearch(query: String) {
-
+        searchQueryState.value = query
     }
 
     data class AppListState(

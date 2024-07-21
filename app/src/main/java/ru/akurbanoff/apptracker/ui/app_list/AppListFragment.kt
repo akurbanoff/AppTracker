@@ -26,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,7 +42,6 @@ import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.example.compose_recyclerview.ComposeRecyclerView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -89,7 +87,7 @@ class AppListFragment(
         modifier: Modifier = Modifier,
         apps: UiState,
         isAllAppsEnabled: Boolean,
-        amountOfEnabledApps: Int
+        amountOfEnabledApps: Int,
     ) {
         Column(
             modifier = modifier
@@ -110,13 +108,15 @@ class AppListFragment(
         val context = LocalContext.current
         var isSearchEnabled by remember { mutableStateOf(false) }
         val searchJob = remember { mutableStateOf<Job?>(null) }
-        val searchQuery = remember{ mutableStateOf("") }
+        val searchQuery = remember { mutableStateOf("") }
         Column(
             modifier = modifier
                 .fillMaxWidth()
-        ){
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth().height(60.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -124,7 +124,7 @@ class AppListFragment(
                     text = "Apps",
                     fontSize = MaterialTheme.typography.headlineMedium.fontSize
                 )
-                if(isSearchEnabled){
+                if (isSearchEnabled) {
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -156,11 +156,13 @@ class AppListFragment(
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
 
-                        )
+                            )
                     )
                 } else {
                     Box(
-                        modifier = Modifier.size(62.dp).align(Alignment.CenterVertically)
+                        modifier = Modifier
+                            .size(62.dp)
+                            .align(Alignment.CenterVertically)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Search,
