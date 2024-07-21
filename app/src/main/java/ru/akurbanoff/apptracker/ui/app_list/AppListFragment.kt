@@ -1,6 +1,5 @@
 package ru.akurbanoff.apptracker.ui.app_list
 
-import android.graphics.drawable.Drawable
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -16,20 +15,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,9 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.compose_recyclerview.ComposeRecyclerView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -75,6 +69,9 @@ class AppListFragment(
         LifeScreen(
             onResume = {
                 appListViewModel.getApps()
+            },
+            onCreate = {
+                appListViewModel.init()
             }
         )
 
@@ -90,7 +87,7 @@ class AppListFragment(
         modifier: Modifier = Modifier,
         apps: UiState,
         isAllAppsEnabled: Boolean,
-        amountOfEnabledApps: Int
+        amountOfEnabledApps: Int,
     ) {
         Column(
             modifier = modifier
@@ -111,13 +108,15 @@ class AppListFragment(
         val context = LocalContext.current
         var isSearchEnabled by remember { mutableStateOf(false) }
         val searchJob = remember { mutableStateOf<Job?>(null) }
-        val searchQuery = remember{ mutableStateOf("") }
+        val searchQuery = remember { mutableStateOf("") }
         Column(
             modifier = modifier
                 .fillMaxWidth()
-        ){
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth().height(60.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -125,7 +124,7 @@ class AppListFragment(
                     text = "Apps",
                     fontSize = MaterialTheme.typography.headlineMedium.fontSize
                 )
-                if(isSearchEnabled){
+                if (isSearchEnabled) {
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -157,11 +156,13 @@ class AppListFragment(
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
 
-                        )
+                            )
                     )
                 } else {
                     Box(
-                        modifier = Modifier.size(62.dp).align(Alignment.CenterVertically)
+                        modifier = Modifier
+                            .size(62.dp)
+                            .align(Alignment.CenterVertically)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Search,
@@ -219,22 +220,20 @@ class AppListFragment(
     private fun AppList(
         modifier: Modifier = Modifier,
         apps: UiState,
-        isAllAppsEnabled: Boolean
+        isAllAppsEnabled: Boolean,
     ) {
         when (apps) {
             is UiState.Error -> TODO()
             UiState.Loading -> {
                 Loading()
             }
+
             is UiState.Success<*> -> {
-                if(!isAllAppsEnabled){
-                    ComposeRecyclerView(
-                        modifier = modifier.fillMaxWidth(),
-                        items = apps.data as? List<AppWithRules> ?: emptyList(),
-                        itemBuilder = { item, position->
-                            AppItem(item = item, position = position)
-                        }
-                    )
+                LazyColumn {
+                    val appWithRules = apps.data as List<AppWithRules>
+                    for (i in appWithRules.indices) {
+                        item { AppItem(item = appWithRules[i]) }
+                    }
                 }
             }
         }
@@ -244,10 +243,7 @@ class AppListFragment(
     private fun AppItem(
         modifier: Modifier = Modifier,
         item: AppWithRules,
-        position: Int
     ) {
-        var enabled by remember(position) { mutableStateOf(item.app.enabled) }
-
         Row(
             modifier = modifier
                 .fillMaxWidth()
@@ -274,10 +270,9 @@ class AppListFragment(
                 )
             }
             Checkbox(
-                checked = enabled,
+                checked = item.app.enabled,
                 onCheckedChange = {
-                    enabled = !enabled
-                    appListViewModel.checkApp(item, enabled)
+                    appListViewModel.checkApp(item, !item.app.enabled)
                 }
             )
         }

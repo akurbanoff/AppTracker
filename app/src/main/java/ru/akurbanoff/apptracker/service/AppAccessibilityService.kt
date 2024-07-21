@@ -2,15 +2,9 @@ package ru.akurbanoff.apptracker.service
 
 import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import ru.akurbanoff.apptracker.AppTrackerApplication
 import ru.akurbanoff.apptracker.accessibility.AccessibilityEngine
 import ru.akurbanoff.apptracker.data.repository.AppsRepository
-import ru.akurbanoff.apptracker.di.getApplicationComponent
-import ru.akurbanoff.apptracker.domain.model.App
-import ru.akurbanoff.apptracker.domain.model.Rule
 
 class AppAccessibilityService : AccessibilityService() {
 
@@ -18,13 +12,10 @@ class AppAccessibilityService : AccessibilityService() {
     private var appsRepository: AppsRepository? = null
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-//        if (accessibilityEngine == null) {
-//            accessibilityEngine = getApplicationComponent(applicationContext).accessibilityEngine
-//        }
 
-//        if (appsRepository == null) {
-//            appsRepository = getApplicationComponent(applicationContext).appsRepository
-//        }
+        if (accessibilityEngine == null) {
+            accessibilityEngine = (applicationContext as AppTrackerApplication).accessibilityEngine
+        }
 
         accessibilityEngine?.processEvent(this, event ?: return)
     }

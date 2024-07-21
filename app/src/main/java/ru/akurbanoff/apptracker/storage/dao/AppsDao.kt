@@ -4,22 +4,20 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
+import kotlinx.coroutines.flow.Flow
 import ru.akurbanoff.apptracker.storage.dto.AppDto
-import ru.akurbanoff.apptracker.storage.dto.RuleDto
 
 @Dao
 interface AppsDao {
-    @Transaction
+    @Query("SELECT * FROM `AppDto`")
+    fun getAll(): Flow<List<AppDto>>
+
     @Query("SELECT * FROM appdto")
-    suspend fun getApps(): List<AppDto>
+    fun getList(): List<AppDto>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrUpdateApp(app: AppDto)
+    suspend fun insertOrUpdate(app: AppDto)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrUpdateRule(rule: RuleDto)
-
-    @Query("DELETE FROM ruledto WHERE applicationId = :appId")
-    suspend fun deleteRulesByAppId(appId: Int)
+    @Query("DELETE FROM appdto WHERE packageName = :packageName")
+    suspend fun delete(packageName: String)
 }
