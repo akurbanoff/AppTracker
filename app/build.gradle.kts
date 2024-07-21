@@ -33,8 +33,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kapt {
         arguments {
@@ -43,7 +43,7 @@ android {
         generateStubs = true
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -62,8 +62,9 @@ android {
 }
 
 dependencies {
-    implementation("com.android.support:multidex:1.0.3")
     with(libs) {
+        implementation(multidex)
+
         implementation(lifecycle.ext)
         implementation(lifecycle.viewmodel.ktx)
 
