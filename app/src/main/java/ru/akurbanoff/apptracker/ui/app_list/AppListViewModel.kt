@@ -23,7 +23,7 @@ class AppListViewModel @Inject constructor(
     private val _state = MutableStateFlow(AppListState())
     val state: StateFlow<AppListState> = _state
 
-    private val shouldShowSystemAppsState = MutableStateFlow(false)
+    private val shouldShowAllApps = MutableStateFlow(false)
     private val searchQueryState = MutableStateFlow("")
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -32,7 +32,7 @@ class AppListViewModel @Inject constructor(
             _state.update { it.copy(apps = UiState.Loading) }
 
             searchQueryState.flatMapLatest { query ->
-                shouldShowSystemAppsState.flatMapLatest { show ->
+                shouldShowAllApps.flatMapLatest { show ->
                     appsRepository.getAllApps(allApps = show, query = query)
                 }
             }.collectLatest {
@@ -43,7 +43,7 @@ class AppListViewModel @Inject constructor(
 
     fun switchAllApps() {
         val isAllAppsEnabled = !_state.value.isAllAppsEnabled
-        shouldShowSystemAppsState.value = isAllAppsEnabled
+        shouldShowAllApps.value = isAllAppsEnabled
         _state.value = _state.value.copy(isAllAppsEnabled = isAllAppsEnabled)
     }
 

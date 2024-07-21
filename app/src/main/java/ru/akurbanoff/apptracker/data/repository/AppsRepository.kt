@@ -42,8 +42,8 @@ class AppsRepository @Inject constructor(
 
     suspend fun actualizeAppList() {
         val installedApps = getInstalledApps()
-        val flattenToList = appsDao.getList()
-        val savedAppConfigs = flattenToList.map { appDtoAppMapper.invoke(it, packageManager) }
+        val appDtoList = appsDao.getList()
+        val savedAppConfigs = appDtoList.map { appDtoAppMapper.invoke(it, packageManager) }
 
         for (installedApp in installedApps) {
             val packageName = installedApp.activityInfo?.packageName ?: continue
