@@ -28,18 +28,5 @@ class AppTrackerApplication : MultiDexApplication() {
         super.onCreate()
 
         appComponent = DaggerAppComponent.factory().create(this)
-
-        android.os.Handler(Looper.getMainLooper()).postDelayed({
-            CoroutineScope(Dispatchers.IO).launch {
-                appsRepository.addRule(
-                    Rule.TimeLimitRule(
-                        id = 5,
-                        enabled = true,
-                        packageName = "ru.dostaevsky.android",
-                        limitInSeconds = 10
-                    )
-                )
-            }
-        }, 3000)
     }
 }
