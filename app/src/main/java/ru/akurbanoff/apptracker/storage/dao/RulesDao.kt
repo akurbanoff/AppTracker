@@ -9,8 +9,8 @@ import ru.akurbanoff.apptracker.storage.dto.RuleDto
 
 @Dao
 interface RulesDao {
-    @Query("SELECT * FROM `ruledto` WHERE applicationId = :appId")
-    suspend fun getRulesByAppId(appId: Int): List<RuleDto>
+    @Query("SELECT * FROM `ruledto` WHERE packageName = :packageName")
+    suspend fun getRulesByPackage(packageName: String): List<RuleDto>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdateRule(rule: RuleDto)

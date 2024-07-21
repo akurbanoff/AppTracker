@@ -2,18 +2,12 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "49b651d5523c7742c370bf30d09fa236",
+    "identityHash": "f8e809ec5534e4acee4b56c802062e75",
     "entities": [
       {
         "tableName": "AppDto",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `packageName` TEXT NOT NULL, `enabled` INTEGER NOT NULL, PRIMARY KEY(`id`, `packageName`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`packageName` TEXT NOT NULL, `enabled` INTEGER NOT NULL, PRIMARY KEY(`packageName`))",
         "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
           {
             "fieldPath": "packageName",
             "columnName": "packageName",
@@ -30,7 +24,6 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "id",
             "packageName"
           ]
         },
@@ -65,7 +58,7 @@
       },
       {
         "tableName": "RuleDto",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `type` TEXT NOT NULL, `enabled` INTEGER NOT NULL, `applicationId` INTEGER NOT NULL, `params` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `type` TEXT NOT NULL, `enabled` INTEGER NOT NULL, `packageName` TEXT NOT NULL, `params` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -86,9 +79,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "applicationId",
-            "columnName": "applicationId",
-            "affinity": "INTEGER",
+            "fieldPath": "packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -111,7 +104,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '49b651d5523c7742c370bf30d09fa236')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f8e809ec5534e4acee4b56c802062e75')"
     ]
   }
 }

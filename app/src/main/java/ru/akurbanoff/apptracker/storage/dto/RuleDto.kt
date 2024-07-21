@@ -9,7 +9,7 @@ data class RuleDto(
     val id: Int = 0,
     val type: RuleType,
     val enabled: Boolean = false,
-    val applicationId: Int = 0,
+    val packageName: String,
     val params: Map<String, Any>,
 )
 

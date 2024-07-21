@@ -1,6 +1,5 @@
 package ru.akurbanoff.apptracker.ui.app_list
 
-import android.graphics.drawable.Drawable
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -14,14 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,9 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.compose_recyclerview.ComposeRecyclerView
 import ru.akurbanoff.apptracker.R
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
 import ru.akurbanoff.apptracker.ui.utils.LifeScreen
@@ -63,6 +58,9 @@ class AppListFragment(
         LifeScreen(
             onResume = {
                 appListViewModel.getApps()
+            },
+            onCreate = {
+                appListViewModel.init()
             }
         )
 
@@ -78,7 +76,7 @@ class AppListFragment(
         modifier: Modifier = Modifier,
         apps: UiState,
         isAllAppsEnabled: Boolean,
-        amountOfEnabledApps: Int
+        amountOfEnabledApps: Int,
     ) {
         Column(
             modifier = modifier
@@ -100,7 +98,7 @@ class AppListFragment(
         Column(
             modifier = modifier
                 .fillMaxWidth()
-        ){
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -111,7 +109,7 @@ class AppListFragment(
                     fontSize = MaterialTheme.typography.headlineMedium.fontSize
                 )
                 Icon(
-                    imageVector= Icons.Default.Search,
+                    imageVector = Icons.Default.Search,
                     contentDescription = null,
                     modifier = Modifier.size(34.dp)
                 )
@@ -137,7 +135,9 @@ class AppListFragment(
                 fontSize = MaterialTheme.typography.titleSmall.fontSize
             )
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -157,22 +157,20 @@ class AppListFragment(
     private fun AppList(
         modifier: Modifier = Modifier,
         apps: UiState,
-        isAllAppsEnabled: Boolean
+        isAllAppsEnabled: Boolean,
     ) {
         when (apps) {
             is UiState.Error -> TODO()
             UiState.Loading -> {
                 Loading()
             }
+
             is UiState.Success<*> -> {
-                if(!isAllAppsEnabled){
-                    ComposeRecyclerView(
-                        modifier = modifier.fillMaxWidth(),
-                        items = apps.data as? List<AppWithRules> ?: emptyList(),
-                        itemBuilder = { item, position->
-                            AppItem(item = item, position = position)
-                        }
-                    )
+                LazyColumn {
+                    val appWithRules = apps.data as List<AppWithRules>
+                    for (i in appWithRules.indices) {
+                        item { AppItem(item = appWithRules[i]) }
+                    }
                 }
             }
         }
@@ -182,10 +180,7 @@ class AppListFragment(
     private fun AppItem(
         modifier: Modifier = Modifier,
         item: AppWithRules,
-        position: Int
     ) {
-        var enabled by remember(position) { mutableStateOf(item.app.enabled) }
-
         Row(
             modifier = modifier
                 .fillMaxWidth()
@@ -212,10 +207,9 @@ class AppListFragment(
                 )
             }
             Checkbox(
-                checked = enabled,
+                checked = item.app.enabled,
                 onCheckedChange = {
-                    enabled = !enabled
-                    appListViewModel.checkApp(item, enabled)
+                    appListViewModel.checkApp(item, !item.app.enabled)
                 }
             )
         }

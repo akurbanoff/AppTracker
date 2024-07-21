@@ -2,12 +2,13 @@ package ru.akurbanoff.apptracker.ui.app_list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.akurbanoff.apptracker.data.repository.AppsRepository
@@ -17,47 +18,57 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AppListViewModel @Inject constructor(
-     private val appsRepository: AppsRepository
-): ViewModel(){
-
+    private val appsRepository: AppsRepository,
+) : ViewModel() {
     private val _state = MutableStateFlow(AppListState())
     val state: StateFlow<AppListState> = _state
 
+    private val shouldShowSystemAppsState = MutableStateFlow(false)
+    private val searchQueryState = MutableStateFlow("")
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun getApps() {
         viewModelScope.launch(Dispatchers.IO) {
-            _state.update {
-                it.copy(apps = UiState.Loading)
-            }
+            _state.update { it.copy(apps = UiState.Loading) }
 
-            val apps = appsRepository.getAllApps().sortedBy { it.app.name }
-            //_state.value = _state.value.copy(apps = apps)
-            _state.update {
-                it.copy(
-                    apps = UiState.Success(apps),
-                    amountOfEnabledApps = apps.count { app -> app.app.enabled }
-                )
+            searchQueryState.flatMapLatest { query ->
+                shouldShowSystemAppsState.flatMapLatest { show ->
+                    appsRepository.getAllApps(allApps = show, query = query)
+                }
+            }.collectLatest {
+                updateState(it)
             }
         }
     }
 
     fun switchAllApps() {
-        _state.value = _state.value.copy(isAllAppsEnabled = !_state.value.isAllAppsEnabled)
+        val isAllAppsEnabled = !_state.value.isAllAppsEnabled
+        shouldShowSystemAppsState.value = isAllAppsEnabled
+        _state.value = _state.value.copy(isAllAppsEnabled = isAllAppsEnabled)
     }
 
-    fun checkApp(app: AppWithRules, enabled: Boolean) {
+    fun checkApp(appWithRules: AppWithRules, enabled: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            _state.update {
-                it.copy(amountOfEnabledApps =
-                    if (enabled) it.amountOfEnabledApps + 1 else it.amountOfEnabledApps - 1
-                )
-            }
-            appsRepository.updateApp(app.app.copy(enabled = enabled))
+            appsRepository.updateApp(appWithRules.app.copy(enabled = enabled))
         }
+    }
+
+    fun init() {
+        viewModelScope.launch(Dispatchers.IO) {
+            appsRepository.actualizeAppList()
+        }
+    }
+
+    private fun updateState(apps: List<AppWithRules>) = _state.update {
+        it.copy(
+            apps = UiState.Success(apps.sortedBy { appWithRules -> appWithRules.app.name }),
+            amountOfEnabledApps = apps.count { app -> app.app.enabled }
+        )
     }
 
     data class AppListState(
         val apps: UiState = UiState.Loading,
         val isAllAppsEnabled: Boolean = false,
-        var amountOfEnabledApps: Int = 0
+        var amountOfEnabledApps: Int = 0,
     )
 }

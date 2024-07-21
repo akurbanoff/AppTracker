@@ -23,7 +23,7 @@ class RuleRuleDtoMapper @Inject constructor() {
         return RuleDto(
             id = rule.id,
             enabled = rule.enabled,
-            applicationId = rule.applicationId,
+            packageName = rule.packageName,
             params = params,
             type = type
         )

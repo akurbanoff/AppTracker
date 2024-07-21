@@ -8,6 +8,5 @@ class AppAppDtoMapper @Inject constructor() {
     operator fun invoke(app: App): AppDto = AppDto(
         packageName = app.packageName,
         enabled = app.enabled,
-        id = app.id,
     )
 }

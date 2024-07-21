@@ -12,7 +12,7 @@ class RuleDtoRuleMapper @Inject constructor() {
                 return Rule.TimeLimitRule(
                     id = rule.id,
                     enabled = rule.enabled,
-                    applicationId = rule.applicationId,
+                    packageName = rule.packageName,
                     limitInSeconds = rule.params[LIMIT_IN_SECONDS].toString().toInt(),
                 )
             }
@@ -21,7 +21,7 @@ class RuleDtoRuleMapper @Inject constructor() {
                 return Rule.HourOfTheDayRangeRule(
                     id = rule.id,
                     enabled = rule.enabled,
-                    applicationId = rule.applicationId,
+                    packageName = rule.packageName,
                     from = rule.params[FROM].toString().toInt(),
                     to = rule.params[TO].toString().toInt(),
                 )
