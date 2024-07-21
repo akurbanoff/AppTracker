@@ -30,7 +30,7 @@ class AppListViewModel @Inject constructor(
             }
 
             val apps = appsRepository.getAllApps().sortedBy { it.app.name }
-            //_state.value = _state.value.copy(apps = apps)
+
             _state.update {
                 it.copy(
                     apps = UiState.Success(apps),
@@ -53,6 +53,10 @@ class AppListViewModel @Inject constructor(
             }
             appsRepository.updateApp(app.app.copy(enabled = enabled))
         }
+    }
+
+    fun onSearch(query: String) {
+
     }
 
     data class AppListState(

@@ -9,10 +9,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import ru.akurbanoff.apptracker.ui.about.AboutFragment
+import ru.akurbanoff.apptracker.ui.about.AboutGraph
 import ru.akurbanoff.apptracker.ui.app_list.AppListFragment
+import ru.akurbanoff.apptracker.ui.app_list.AppListGraph
 import ru.akurbanoff.apptracker.ui.navigation.bottomBar.BottomBar
 import ru.akurbanoff.apptracker.ui.service_settings.ServiceSettingsFragment
+import ru.akurbanoff.apptracker.ui.service_settings.ServiceSettingsGraph
 import ru.akurbanoff.apptracker.ui.statistics.StatisticsFragment
+import ru.akurbanoff.apptracker.ui.statistics.StatisticsGraph
 
 @Composable
 fun MainNavigationGraph(modifier: Modifier = Modifier) {
@@ -26,23 +30,23 @@ fun MainNavigationGraph(modifier: Modifier = Modifier) {
     ) { padding ->
         NavHost(
             modifier = Modifier.padding(padding),
-            startDestination = NavDestinations.ServiceSettings.route,
+            startDestination = NavGraphs.ServiceSettingsGraph.route,
             navController = navigator
         ) {
-            composable(NavDestinations.ServiceSettings.route) {
-                ServiceSettingsFragment(navigator).main()
+            composable(NavGraphs.ServiceSettingsGraph.route) {
+                ServiceSettingsGraph(rootNavController = navigator)
             }
 
-            composable(NavDestinations.About.route) {
-                AboutFragment(navigator).main()
+            composable(NavGraphs.AboutGraph.route) {
+                AboutGraph(rootNavController = navigator)
             }
 
-            composable(NavDestinations.AppList.route) {
-                AppListFragment(navigator).Main()
+            composable(NavGraphs.AppListGraph.route) {
+                AppListGraph(rootNavController = navigator)
             }
 
-            composable(NavDestinations.Statistics.route) {
-                StatisticsFragment(navigator).main()
+            composable(NavGraphs.StatisticsGraph.route) {
+                StatisticsGraph(rootNavController = navigator)
             }
         }
     }
