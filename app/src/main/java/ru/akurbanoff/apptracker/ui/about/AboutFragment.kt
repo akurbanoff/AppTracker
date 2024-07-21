@@ -8,7 +8,7 @@ class AboutFragment(
     private val navController: NavHostController
 ) {
     @Composable
-    fun main() {
+    fun Main() {
 
     }
 }

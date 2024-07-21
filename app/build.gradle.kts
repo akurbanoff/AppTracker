@@ -40,6 +40,7 @@ android {
         arguments {
             arg("room.schemaLocation", "$projectDir/schemas")
         }
+        generateStubs = true
     }
     kotlinOptions {
         jvmTarget = "1.8"
@@ -61,6 +62,7 @@ android {
 }
 
 dependencies {
+    implementation("com.android.support:multidex:1.0.3")
     with(libs) {
         implementation(lifecycle.ext)
         implementation(lifecycle.viewmodel.ktx)
