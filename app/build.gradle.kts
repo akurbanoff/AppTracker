@@ -40,7 +40,6 @@ android {
         arguments {
             arg("room.schemaLocation", "$projectDir/schemas")
         }
-        generateStubs = true
     }
     kotlinOptions {
         jvmTarget = "17"
