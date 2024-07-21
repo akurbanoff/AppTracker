@@ -25,7 +25,6 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import ru.akurbanoff.apptracker.domain.gDChangeBottomNavigationMenu
 
 @Composable
 fun BottomBar(navController: NavHostController) {

@@ -2,6 +2,7 @@ package ru.akurbanoff.apptracker.ui.app_list
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,7 +23,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +34,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -36,6 +43,12 @@ import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.compose_recyclerview.ComposeRecyclerView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import ru.akurbanoff.apptracker.R
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
 import ru.akurbanoff.apptracker.ui.utils.LifeScreen
@@ -76,7 +89,7 @@ class AppListFragment(
         modifier: Modifier = Modifier,
         apps: UiState,
         isAllAppsEnabled: Boolean,
-        amountOfEnabledApps: Int,
+        amountOfEnabledApps: Int
     ) {
         Column(
             modifier = modifier
@@ -95,12 +108,15 @@ class AppListFragment(
         amountOfEnabledApps: Int,
     ) {
         val context = LocalContext.current
+        var isSearchEnabled by remember { mutableStateOf(false) }
+        val searchJob = remember { mutableStateOf<Job?>(null) }
+        val searchQuery = remember{ mutableStateOf("") }
         Column(
             modifier = modifier
                 .fillMaxWidth()
-        ) {
+        ){
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().height(60.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -108,11 +124,56 @@ class AppListFragment(
                     text = "Apps",
                     fontSize = MaterialTheme.typography.headlineMedium.fontSize
                 )
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null,
-                    modifier = Modifier.size(34.dp)
-                )
+                if(isSearchEnabled){
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 7.dp)
+                            .clip(MaterialTheme.shapes.medium),
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clickable {
+                                        isSearchEnabled = !isSearchEnabled
+                                        searchQuery.value = ""
+                                        appListViewModel.onSearch(query = searchQuery.value)
+                                    }
+                            )
+                        },
+                        value = searchQuery.value,
+                        onValueChange = {
+                            searchQuery.value = it
+                            searchJob.value?.cancel()
+                            searchJob.value = CoroutineScope(Dispatchers.Main).launch {
+                                delay(1000) // задержка в миллисекундах для ожидания окончания ввода
+                                appListViewModel.onSearch(query = searchQuery.value)
+                            }
+                        },
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+
+                        )
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier.size(62.dp).align(Alignment.CenterVertically)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(34.dp)
+                                .align(Alignment.Center)
+                                .clickable {
+                                    isSearchEnabled = !isSearchEnabled
+                                }
+                        )
+                    }
+                }
             }
             Row(
                 modifier = Modifier

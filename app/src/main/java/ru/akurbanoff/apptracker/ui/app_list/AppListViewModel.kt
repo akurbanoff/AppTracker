@@ -66,6 +66,10 @@ class AppListViewModel @Inject constructor(
         )
     }
 
+    fun onSearch(query: String) {
+
+    }
+
     data class AppListState(
         val apps: UiState = UiState.Loading,
         val isAllAppsEnabled: Boolean = false,

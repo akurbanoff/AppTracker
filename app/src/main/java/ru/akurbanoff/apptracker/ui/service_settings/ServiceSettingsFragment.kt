@@ -19,7 +19,7 @@ class ServiceSettingsFragment(
     lateinit var serviceSettingsViewModel: ServiceSettingsViewModel
 
     @Composable
-    fun main() {
+    fun Main() {
         serviceSettingsViewModel = getApplicationComponent(LocalContext.current).serviceSettingsViewModel
         val state = serviceSettingsViewModel.state.collectAsState()
     }
