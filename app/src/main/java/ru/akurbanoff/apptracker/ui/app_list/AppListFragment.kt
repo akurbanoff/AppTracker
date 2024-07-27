@@ -42,6 +42,11 @@ import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import coil.ImageLoader
+import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.request.ImageRequest
+import com.example.compose_recyclerview.ComposeRecyclerView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -255,11 +260,11 @@ class AppListFragment(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Image(
+                AsyncImage(
                     modifier = Modifier.size(34.dp),
-                    bitmap = item.app.icon?.asImageBitmap()
-                        ?: ImageBitmap.imageResource(id = R.drawable.ic_launcher_foreground),
-                    contentDescription = null
+                    model = ImageRequest.Builder(LocalContext.current).data(item.app.icon).build(),
+                    contentDescription = null,
+                    imageLoader = ImageLoader(LocalContext.current)
                 )
                 Spacer(
                     modifier = Modifier.width(8.dp)

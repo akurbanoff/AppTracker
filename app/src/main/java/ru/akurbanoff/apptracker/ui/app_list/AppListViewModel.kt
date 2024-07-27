@@ -72,7 +72,7 @@ class AppListViewModel @Inject constructor(
 
     data class AppListState(
         val apps: UiState = UiState.Loading,
-        val isAllAppsEnabled: Boolean = false,
+        val isAllAppsEnabled: Boolean = true,
         var amountOfEnabledApps: Int = 0,
     )
 }

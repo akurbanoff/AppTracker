@@ -62,6 +62,8 @@ android {
 
 dependencies {
     with(libs) {
+        implementation(coil)
+
         implementation(multidex)
 
         implementation(lifecycle.ext)
