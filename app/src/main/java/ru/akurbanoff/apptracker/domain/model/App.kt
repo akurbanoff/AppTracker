@@ -1,8 +1,5 @@
 package ru.akurbanoff.apptracker.domain.model
 
-import androidx.compose.runtime.Immutable
-
-@Immutable
 data class App(
     val packageName: String,
     val enabled: Boolean,
