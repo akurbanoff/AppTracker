@@ -16,10 +16,6 @@ class RulesProcessor @Inject constructor(
     private var apps: List<AppWithRules> = listOf()
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
-    init {
-
-    }
-
     fun processRules(currentAppPackageName: String, onTriggered: () -> Unit) = coroutineScope.launch {
         val appState = appsRepository.getAppStateFor(currentAppPackageName) ?: return@launch
         val apps = appsRepository.getList()
