@@ -35,10 +35,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -70,9 +69,6 @@ class AppListFragment(
             onResume = {
                 appListViewModel.getApps()
             },
-            onCreate = {
-                appListViewModel.init()
-            }
         )
 
         ScreenContent(
@@ -230,9 +226,9 @@ class AppListFragment(
 
             is UiState.Success<*> -> {
                 LazyColumn {
-                    val appWithRules = apps.data as List<AppWithRules>
-                    for (i in appWithRules.indices) {
-                        item { AppItem(item = appWithRules[i]) }
+                    val itemApps = apps.data as List<AppWithRules>
+                    for (i in itemApps.indices) {
+                        item { AppItem(item = itemApps[i]) }
                     }
                 }
             }
@@ -255,17 +251,26 @@ class AppListFragment(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Image(
-                    modifier = Modifier.size(34.dp),
-                    bitmap = item.app.icon?.asImageBitmap()
-                        ?: ImageBitmap.imageResource(id = R.drawable.ic_launcher_foreground),
-                    contentDescription = null
-                )
+                if (item in appListViewModel.imageBitmaps) {
+                    val imageBitmap = appListViewModel.imageBitmaps[item]!!.asImageBitmap()
+
+                    Image(
+                        modifier = Modifier.size(34.dp),
+                        bitmap = imageBitmap,
+                        contentDescription = ""
+                    )
+                } else {
+                    Image(
+                        modifier = Modifier.size(34.dp),
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = ""
+                    )
+                }
                 Spacer(
                     modifier = Modifier.width(8.dp)
                 )
                 Text(
-                    text = item.app.name ?: "",
+                    text = item.app.name ?: item.app.packageName,
                     fontSize = MaterialTheme.typography.titleMedium.fontSize
                 )
             }

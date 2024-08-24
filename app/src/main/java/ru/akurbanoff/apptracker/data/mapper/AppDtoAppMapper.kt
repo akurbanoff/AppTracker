@@ -10,8 +10,7 @@ import javax.inject.Inject
 class AppDtoAppMapper @Inject constructor() {
     operator fun invoke(app: AppDto, packageManager: PackageManager): App = with(app) {
         val appName = packageManager.labelByPackage(packageName)
-        val appIcon = packageManager.getApplicationIcon(packageName).toBitmap()
 
-        App(packageName = packageName, enabled = enabled, name = appName, icon = appIcon)
+        App(packageName = packageName, enabled = enabled, name = appName)
     }
 }

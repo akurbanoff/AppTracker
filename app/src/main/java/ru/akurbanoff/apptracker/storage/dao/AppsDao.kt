@@ -20,4 +20,8 @@ interface AppsDao {
 
     @Query("DELETE FROM appdto WHERE packageName = :packageName")
     suspend fun delete(packageName: String)
+
+    //UPDATE appdto SET enabled=0 WHERE packageName='com.android.settings'
+    @Query("UPDATE appdto SET enabled = :enabled WHERE packageName = :packageName")
+    suspend fun checkApp(packageName: String, enabled: Boolean)
 }

@@ -21,6 +21,7 @@ class DatabaseModule {
     @Singleton
     fun provideRoomDatabase(@ApplicationContext context: Context): AppTrackerDatabase =
         Room.databaseBuilder(context, AppTrackerDatabase::class.java, "database")
+            .fallbackToDestructiveMigration()
             .build()
 
     @Provides
