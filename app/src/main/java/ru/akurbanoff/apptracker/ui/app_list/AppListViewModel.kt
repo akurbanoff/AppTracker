@@ -2,7 +2,6 @@ package ru.akurbanoff.apptracker.ui.app_list
 
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.util.Log
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -36,7 +35,9 @@ class AppListViewModel @Inject constructor(
     private var apps: List<AppWithRules> = listOf()
 
     private var imageJob: Job? = null
-    val imageBitmaps = hashMapOf<AppWithRules, Bitmap>()
+
+    private val _bitmapMap = MutableStateFlow<HashMap<String, Bitmap>>(hashMapOf())
+    val bitmapMap: StateFlow<HashMap<String, Bitmap>> = _bitmapMap
 
     init {
         updateState(apps = appsRepository.cachedApps)
@@ -69,14 +70,16 @@ class AppListViewModel @Inject constructor(
 
     private fun requestImagesFor(itemApps: List<AppWithRules>) {
         if (imageJob != null) return
-        if (itemApps.size == imageBitmaps.size) return
+        if (itemApps.size == bitmapMap.value.size) return
 
         imageJob = viewModelScope.launch(Dispatchers.IO) {
             for (itemApp in itemApps) {
                 val packageManager = AppTrackerApplication.INSTANCE?.packageManager
                 val appIcon = packageManager?.getApplicationIcon(itemApp.app.packageName)?.toBitmap() ?: return@launch
-                imageBitmaps[itemApp] = appIcon
+                _bitmapMap.value[itemApp.app.packageName] = appIcon
             }
+
+            _bitmapMap.value = _bitmapMap.value
         }
 
         updateState(apps)

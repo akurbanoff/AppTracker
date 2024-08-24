@@ -1,5 +1,8 @@
 package ru.akurbanoff.apptracker.domain.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class AppWithRules(
     val app: App,
     val rules: List<Rule>,
