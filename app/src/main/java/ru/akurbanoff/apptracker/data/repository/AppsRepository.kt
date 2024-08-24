@@ -3,6 +3,7 @@ package ru.akurbanoff.apptracker.data.repository
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
+import androidx.room.Transaction
 import androidx.room.withTransaction
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -22,8 +23,10 @@ import ru.akurbanoff.apptracker.storage.dao.AppStatesDao
 import ru.akurbanoff.apptracker.storage.dao.AppsDao
 import ru.akurbanoff.apptracker.storage.dao.RulesDao
 import javax.inject.Inject
+import javax.inject.Singleton
 
 
+@Singleton
 class AppsRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val database: AppTrackerDatabase,
@@ -38,8 +41,10 @@ class AppsRepository @Inject constructor(
     private val appStateDtoAppStateMapper: AppStateDtoAppStateMapper,
 ) {
 
+    val cachedApps: MutableList<AppWithRules> = mutableListOf()
     private val packageManager = context.packageManager
 
+    @Transaction
     suspend fun actualizeAppList() {
         val installedApps = getInstalledApps()
         val appDtoList = appsDao.getList()
@@ -49,11 +54,9 @@ class AppsRepository @Inject constructor(
             val packageName = installedApp.activityInfo?.packageName ?: continue
             val newApp = savedAppConfigs.firstOrNull { it.packageName == packageName } == null
             if (newApp) {
-                val app = App(enabled = false, packageName = packageName)
-                updateApp(app)
+                updateApp(App(enabled = false, packageName = packageName))
             }
         }
-
         for (appConfig in savedAppConfigs) {
             val appIsDeleted =
                 installedApps.firstOrNull { it.activityInfo?.packageName == appConfig.packageName } == null
@@ -73,7 +76,14 @@ class AppsRepository @Inject constructor(
                 val include = if (allApps) true else it.app.enabled
                 include && containsQuery
             }
+        }.map {
+            cachedApps.clear()
+            cachedApps.addAll(it); it
         }
+    }
+
+    suspend fun checkApp(app: String, enabled: Boolean) {
+        appsDao.checkApp(app, enabled)
     }
 
     suspend fun updateApp(app: App) {

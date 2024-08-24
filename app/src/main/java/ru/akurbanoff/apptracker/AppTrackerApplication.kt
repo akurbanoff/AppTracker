@@ -27,6 +27,11 @@ class AppTrackerApplication : MultiDexApplication() {
     override fun onCreate() {
         super.onCreate()
 
+        INSTANCE = this
         appComponent = DaggerAppComponent.factory().create(this)
+    }
+
+    companion object {
+        var INSTANCE: AppTrackerApplication? = null
     }
 }

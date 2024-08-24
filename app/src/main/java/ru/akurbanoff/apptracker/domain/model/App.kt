@@ -1,10 +1,20 @@
 package ru.akurbanoff.apptracker.domain.model
 
-import android.graphics.Bitmap
-
 data class App(
-    val name: String? = null,
-    val icon: Bitmap? = null,
     val packageName: String,
-    var enabled: Boolean,
-)
+    val enabled: Boolean,
+    val name: String? = null,
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as App
+
+        return packageName == other.packageName
+    }
+
+    override fun hashCode(): Int {
+        return packageName.hashCode()
+    }
+}

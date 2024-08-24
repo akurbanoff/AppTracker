@@ -10,7 +10,7 @@ import ru.akurbanoff.apptracker.storage.dto.AppDto
 import ru.akurbanoff.apptracker.storage.dto.AppStateDto
 import ru.akurbanoff.apptracker.storage.dto.RuleDto
 
-@Database(entities = [AppDto::class, AppStateDto::class, RuleDto::class], version = 1)
+@Database(entities = [AppDto::class, AppStateDto::class, RuleDto::class], version = 2)
 @TypeConverters(Converters::class)
 abstract class AppTrackerDatabase : RoomDatabase() {
     abstract fun appsDao(): AppsDao

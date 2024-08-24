@@ -8,4 +8,5 @@ data class AppDto(
     @PrimaryKey
     val packageName: String,
     val enabled: Boolean,
+    val name: String? = null,
 )
