@@ -1,5 +1,8 @@
 package ru.akurbanoff.apptracker.domain.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 sealed class Rule(
     open val id: Int,
     open val enabled: Boolean,

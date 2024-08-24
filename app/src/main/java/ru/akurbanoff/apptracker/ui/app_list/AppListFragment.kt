@@ -225,10 +225,10 @@ class AppListFragment(
             }
 
             is UiState.Success<*> -> {
+                val itemApps = apps.data as List<AppWithRules>
                 LazyColumn {
-                    val itemApps = apps.data as List<AppWithRules>
-                    for (i in itemApps.indices) {
-                        item { AppItem(item = itemApps[i]) }
+                    items(itemApps.size, key = { item -> itemApps[item].app.packageName }) { item ->
+                        AppItem(item = itemApps[item])
                     }
                 }
             }
@@ -251,13 +251,16 @@ class AppListFragment(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                if (item in appListViewModel.imageBitmaps) {
-                    val imageBitmap = appListViewModel.imageBitmaps[item]!!.asImageBitmap()
+                val map by appListViewModel.bitmapMap.collectAsState()
+                val imageBitmap = map[item.app.packageName]?.asImageBitmap()
 
+                // Check if the imageBitmap is null and display accordingly
+                // Display the image or a placeholder if the bitmap is null
+                if (imageBitmap != null) {
                     Image(
                         modifier = Modifier.size(34.dp),
                         bitmap = imageBitmap,
-                        contentDescription = ""
+                        contentDescription = "",
                     )
                 } else {
                     Image(
@@ -266,6 +269,7 @@ class AppListFragment(
                         contentDescription = ""
                     )
                 }
+
                 Spacer(
                     modifier = Modifier.width(8.dp)
                 )
