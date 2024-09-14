@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">AppTracker</string>
+    <string name="confirm">Подтвердить</string>
 
     <!--    Accessibility    -->
     <string name="accessibility_service_desc">Данный сервис обеспечивает возможность видеть запущенные в данный момент приложения, а также закрывать их в случае, если лимит времени на использование исчерпан</string>
@@ -11,6 +12,12 @@
 
     <!-- AppListFragment -->
     <string name="all_apps">Все приложения</string>
-    <string name="all_apps_info">Чтобы выбрать все приложения, включите переключатель</string>
+    <string name="all_apps_info">Чтобы увидеть все приложения, включите переключатель</string>
     <string name="amount_of_apps">Количество выбранных приложений</string>
+    <string name="about_time_limit_rule">Выберите то количество часов и минут, на сколько будет ограничена длительность работы приложения</string>
+    <string name="about_hour_of_the_day_range_rule">Выберите со скольки по скольки будет запрещен вход в приложение</string>
+
+    <!-- AppListDetailsFragment -->
+<!--    <string name="about_time_limit_rule">Выберите то количество минут, на сколько будет ограничена длительность работы приложения</string>-->
+<!--    <string name="about_hour_of_the_day_range_rule">Выберите со скольки по скольки будет запрещен вход в приложение</string>-->
 </resources>
