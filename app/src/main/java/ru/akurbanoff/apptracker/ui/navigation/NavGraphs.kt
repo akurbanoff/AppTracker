@@ -5,4 +5,5 @@ sealed class NavGraphs(val route: String) {
     data object ServiceSettingsGraph : NavGraphs("service_settings_graph")
     data object AppListGraph : NavGraphs("app_list_graph")
     data object StatisticsGraph : NavGraphs("statistics_graph")
+    data object EmergencyAccessGraph: NavGraphs("emergency_access")
 }

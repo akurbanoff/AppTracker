@@ -39,7 +39,7 @@ class Notifications @Inject constructor(
         lastNotificationTime = currentTimeMillis
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
+        // Надо добавить кнопку R.string.emergency_access которая будет вести на экран EmergenctAccessFragment
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(icon)
             .setContentTitle(title)

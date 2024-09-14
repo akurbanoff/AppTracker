@@ -66,7 +66,10 @@ import kotlinx.coroutines.launch
 import ru.akurbanoff.apptracker.R
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
 import ru.akurbanoff.apptracker.domain.model.Rule
+import ru.akurbanoff.apptracker.ui.navigation.NavGraphs
 import ru.akurbanoff.apptracker.ui.utils.LifeScreen
+import ru.akurbanoff.apptracker.ui.utils.formatSecondsToTime
+import ru.akurbanoff.apptracker.ui.utils.formatTime
 import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -79,7 +82,7 @@ class AppListFragment(
 
     @Composable
     fun Main() {
-        appListViewModel = hiltViewModel<AppListViewModel>()
+        appListViewModel = hiltViewModel()
         val state by appListViewModel.state.collectAsState()
 
         BackHandler {
@@ -89,7 +92,7 @@ class AppListFragment(
         LifeScreen(
             onResume = {
                 appListViewModel.getApps()
-            },
+            }
         )
 
         ScreenContent(
@@ -146,7 +149,7 @@ class AppListFragment(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Apps",
+                    text = context.getString(R.string.all_apps),
                     style = MaterialTheme.typography.headlineMedium
                 )
                 if (isSearchEnabled) {
@@ -204,7 +207,7 @@ class AppListFragment(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 32.dp),
+                    .padding(top = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -275,7 +278,7 @@ class AppListFragment(
                     .fillMaxWidth()
                     .padding(top = 12.dp)
                     .clickable {
-                        //navController.navigate(AppListDetailsFragment::class.java.name + "/${Gson().toJson(item)}")
+                        navController.navigate(NavGraphs.EmergencyAccessGraph.route)
                         showAppSettings.value = !showAppSettings.value
                     },
                 verticalAlignment = Alignment.CenterVertically,
@@ -318,16 +321,11 @@ class AppListFragment(
                     Checkbox(
                         checked = item.app.enabled,
                         onCheckedChange = {
-                            appListViewModel.checkApp(item, !item.app.enabled)
+                            showAppSettings.value = !showAppSettings.value
+                            if(item.app.enabled) {
+                                appListViewModel.checkApp(item, !item.app.enabled)
+                            }
                         }
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Icon(
-                        imageVector = if (showAppSettings.value) Icons.Default.KeyboardArrowDown else Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(30.dp)
-                            .clickable { showAppSettings.value = !showAppSettings.value }
                     )
                 }
             }
@@ -407,6 +405,9 @@ class AppListFragment(
                                 hour = timePickerTimeLimitRuleState.hour,
                                 minute = timePickerTimeLimitRuleState.minute
                             )
+                            if(!app.app.enabled) {
+                                appListViewModel.checkApp(app, !app.app.enabled)
+                            }
                         }
                     ) {
                         TimePicker(state = timePickerTimeLimitRuleState)
@@ -453,7 +454,12 @@ class AppListFragment(
                 ) {
                     if (showTimePickerFrom) {
                         Dialog(
-                            onDismissRequest = { showTimePickerFrom = false }
+                            onDismissRequest = {
+                                showTimePickerFrom = false
+                                if(!app.app.enabled) {
+                                    appListViewModel.checkApp(app, !app.app.enabled)
+                                }
+                            }
                         ) {
                             TimePicker(state = timePickerStateFrom)
                         }
@@ -479,7 +485,7 @@ class AppListFragment(
                     contentDescription = null,
                     modifier = Modifier
                         .background(
-                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                             shape = MaterialTheme.shapes.small
                         )
                         .size(34.dp)
@@ -498,7 +504,12 @@ class AppListFragment(
                 ) {
                     if (showTimePickerTo) {
                         Dialog(
-                            onDismissRequest = { showTimePickerTo = false }
+                            onDismissRequest = {
+                                showTimePickerTo = false
+                                if(!app.app.enabled) {
+                                    appListViewModel.checkApp(app, !app.app.enabled)
+                                }
+                            }
                         ) {
                             TimePicker(state = timePickerStateTo)
                         }
@@ -518,18 +529,5 @@ class AppListFragment(
                 }
             }
         }
-    }
-
-    fun formatTime(hour: Int, minute: Int): String {
-        val formatter = DateTimeFormatter.ofPattern("HH:mm")
-        val time = LocalTime.of(hour, minute)
-        return time.format(formatter)
-    }
-
-    fun formatSecondsToTime(seconds: Int?): String {
-        if (seconds == null) return "00:00"
-        val formatter = DateTimeFormatter.ofPattern("HH:mm")
-        val time = LocalTime.of(0, 0, seconds)
-        return time.format(formatter)
     }
 }

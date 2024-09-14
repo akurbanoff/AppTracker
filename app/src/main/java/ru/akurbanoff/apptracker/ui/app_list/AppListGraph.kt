@@ -6,6 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import ru.akurbanoff.apptracker.ui.emergency_access.EmergencyAccessFragment
+import ru.akurbanoff.apptracker.ui.navigation.NavGraphs
 
 @Composable
 fun AppListGraph(modifier: Modifier = Modifier, rootNavController: NavHostController) {
@@ -17,6 +19,12 @@ fun AppListGraph(modifier: Modifier = Modifier, rootNavController: NavHostContro
     ){
         composable(AppListFragment::class.java.name) {
             AppListFragment(appListNavigator).Main()
+        }
+
+        composable(
+            route = NavGraphs.EmergencyAccessGraph.route,
+        ){
+            EmergencyAccessFragment(appListNavigator).Main()
         }
     }
 }
