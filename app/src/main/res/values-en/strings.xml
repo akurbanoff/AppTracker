@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">AppTracker</string>
+    <string name="confirm">Confirm</string>
+    <string name="emergency_access">Emergency access</string>
 
     <!--    Accessibility    -->
     <string name="accessibility_service_desc">This service provides the ability to see currently running applications, as well as close them if the time limit for use has been exhausted</string>
@@ -12,6 +14,17 @@
 
     <!-- AppListFragment -->
     <string name="all_apps">All apps</string>
-    <string name="all_apps_info">To select all apps, turn on the switch</string>
+    <string name="all_apps_info">To see all apps, turn on the switch</string>
     <string name="amount_of_apps">Number of selected applications</string>
+    <string name="about_time_limit_rule">Select the number of hours and minutes for which the application will be limited to run in a day</string>
+    <string name="about_hour_of_the_day_range_rule">Select from what time to what time the entry to the application will be prohibited</string>
+
+    <!-- ServiceSettingsFragment -->
+    <string name="service_settings">Service settings</string>
+    <string name="is_notification_enabled">Enable service notification</string>
+    <string name="enable_control_using_app_in_browser">Allow control over application usage in the browser</string>
+
+
+    <!-- AppListDetailsFragment -->
+
 </resources>

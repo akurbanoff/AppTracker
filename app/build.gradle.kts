@@ -63,6 +63,7 @@ android {
 dependencies {
     with(libs) {
         implementation(coil)
+        implementation(gson)
         implementation(multidex)
 
         implementation(lifecycle.ext)

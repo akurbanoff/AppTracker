@@ -11,15 +11,19 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.akurbanoff.apptracker.AppTrackerApplication
 import ru.akurbanoff.apptracker.data.repository.AppsRepository
 import ru.akurbanoff.apptracker.domain.model.App
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
-import ru.akurbanoff.apptracker.ui.utils.UiState
+import ru.akurbanoff.apptracker.domain.model.Rule
+import java.util.Random
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,9 +53,30 @@ class AppListViewModel @Inject constructor(
             searchQueryState.flatMapLatest { query ->
                 shouldShowAllApps.flatMapLatest { show ->
                     appsRepository.getAllApps(allApps = show, query = query)
+                        .map {
+                            Result.success(it)
+                        }.catch {
+                            Result.failure<Throwable>(it)
+                        }
                 }
-            }.collectLatest { app ->
-                updateState(app)
+            }.collectLatest { appsResult ->
+                when {
+                    appsResult.isFailure -> {
+                        _state.update {
+                            it.copy(
+                                isAppsFailure = appsResult.exceptionOrNull()
+                            )
+                        }
+                    }
+                    appsResult.isSuccess -> {
+                        _state.update {
+                            it.copy(
+                                isAppsFailure = null,
+                            )
+                        }
+                        updateState(appsResult.getOrNull() ?: emptyList())
+                    }
+                }
             }
         }
     }
@@ -59,7 +84,7 @@ class AppListViewModel @Inject constructor(
     fun switchAllApps() {
         val isAllAppsEnabled = !_state.value.isAllAppsEnabled
         shouldShowAllApps.value = isAllAppsEnabled
-        _state.value = _state.value.copy(isAllAppsEnabled = isAllAppsEnabled)
+        _state.update { it.copy(isAllAppsEnabled = isAllAppsEnabled) }
     }
 
     fun checkApp(itemApp: AppWithRules, enabled: Boolean) {
@@ -90,7 +115,7 @@ class AppListViewModel @Inject constructor(
         requestImagesFor(apps)
 
         it.copy(
-            apps = UiState.Success(apps.sortedBy { apps -> apps.app.name }),
+            apps = apps.sortedBy { apps -> apps.app.name },
             amountOfEnabledApps = apps.count { app -> app.app.enabled }
         )
     }
@@ -102,9 +127,18 @@ class AppListViewModel @Inject constructor(
     fun getIconFor(packageManager: PackageManager, app: App) =
         packageManager.getApplicationIcon(app.packageName).toBitmap()
 
+    fun setTimeLimitRule(packageName: String, enabled: Boolean, hour: Int, minute: Int){
+        val limitInSeconds = ((hour * 60) + minute) * 60
+        val rule = Rule.TimeLimitRule(id = Random().nextInt(), packageName = packageName, enabled = enabled, limitInSeconds = limitInSeconds)
+        viewModelScope.launch(Dispatchers.IO) {
+            appsRepository.addRule(rule)
+        }
+    }
+
     data class AppListState(
-        val apps: UiState = UiState.Success(listOf<AppWithRules>()),
+        val apps: List<AppWithRules> = emptyList(),
         val isAllAppsEnabled: Boolean = true,
         var amountOfEnabledApps: Int = 0,
+        var isAppsFailure: Throwable? = null,
     )
 }

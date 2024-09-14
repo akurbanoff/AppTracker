@@ -1,13 +1,17 @@
 package ru.akurbanoff.apptracker.ui.app_list
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,17 +19,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,9 +49,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.CoroutineScope
@@ -48,8 +65,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.akurbanoff.apptracker.R
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
+import ru.akurbanoff.apptracker.domain.model.Rule
+import ru.akurbanoff.apptracker.ui.navigation.NavGraphs
 import ru.akurbanoff.apptracker.ui.utils.LifeScreen
-import ru.akurbanoff.apptracker.ui.utils.UiState
+import ru.akurbanoff.apptracker.ui.utils.formatSecondsToTime
+import ru.akurbanoff.apptracker.ui.utils.formatTime
+import java.text.SimpleDateFormat
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.Date
 
 class AppListFragment(
     private val navController: NavHostController,
@@ -58,7 +82,7 @@ class AppListFragment(
 
     @Composable
     fun Main() {
-        appListViewModel = hiltViewModel<AppListViewModel>()
+        appListViewModel = hiltViewModel()
         val state by appListViewModel.state.collectAsState()
 
         BackHandler {
@@ -68,30 +92,38 @@ class AppListFragment(
         LifeScreen(
             onResume = {
                 appListViewModel.getApps()
-            },
+            }
         )
 
         ScreenContent(
             apps = state.apps,
             isAllAppsEnabled = state.isAllAppsEnabled,
-            amountOfEnabledApps = state.amountOfEnabledApps
+            amountOfEnabledApps = state.amountOfEnabledApps,
+            isAppsFailure = state.isAppsFailure
         )
     }
 
     @Composable
     private fun ScreenContent(
         modifier: Modifier = Modifier,
-        apps: UiState,
+        apps: List<AppWithRules>,
         isAllAppsEnabled: Boolean,
         amountOfEnabledApps: Int,
+        isAppsFailure: Throwable?,
     ) {
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            TopScreenPart(isAllAppsEnabled = isAllAppsEnabled, amountOfEnabledApps = amountOfEnabledApps)
-            AppList(apps = apps, isAllAppsEnabled = isAllAppsEnabled)
+            TopScreenPart(
+                isAllAppsEnabled = isAllAppsEnabled,
+                amountOfEnabledApps = amountOfEnabledApps
+            )
+            AppList(
+                apps = apps,
+                isAppsFailure = isAppsFailure
+            )
         }
     }
 
@@ -117,8 +149,8 @@ class AppListFragment(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Apps",
-                    fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                    text = context.getString(R.string.all_apps),
+                    style = MaterialTheme.typography.headlineMedium
                 )
                 if (isSearchEnabled) {
                     TextField(
@@ -151,8 +183,7 @@ class AppListFragment(
                         colors = TextFieldDefaults.colors(
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
-
-                            )
+                        )
                     )
                 } else {
                     Box(
@@ -176,13 +207,13 @@ class AppListFragment(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 32.dp),
+                    .padding(top = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = context.getString(R.string.all_apps),
-                    fontSize = MaterialTheme.typography.titleLarge.fontSize
+                    style = MaterialTheme.typography.titleLarge
                 )
                 Switch(
                     checked = isAllAppsEnabled,
@@ -191,7 +222,7 @@ class AppListFragment(
             }
             Text(
                 text = context.getString(R.string.all_apps_info),
-                fontSize = MaterialTheme.typography.titleSmall.fontSize
+                style = MaterialTheme.typography.titleSmall
             )
             Row(
                 modifier = Modifier
@@ -202,11 +233,11 @@ class AppListFragment(
             ) {
                 Text(
                     text = context.getString(R.string.amount_of_apps),
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = amountOfEnabledApps.toString(),
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize
+                    style = MaterialTheme.typography.titleMedium
                 )
             }
         }
@@ -215,20 +246,19 @@ class AppListFragment(
     @Composable
     private fun AppList(
         modifier: Modifier = Modifier,
-        apps: UiState,
-        isAllAppsEnabled: Boolean,
+        apps: List<AppWithRules>,
+        isAppsFailure: Throwable?,
     ) {
-        when (apps) {
-            is UiState.Error -> TODO()
-            UiState.Loading -> {
-                Loading()
+        val lazyListState = rememberLazyListState()
+        when {
+            isAppsFailure != null -> {
+
             }
 
-            is UiState.Success<*> -> {
-                val itemApps = apps.data as List<AppWithRules>
+            else -> {
                 LazyColumn {
-                    items(itemApps.size, key = { item -> itemApps[item].app.packageName }) { item ->
-                        AppItem(item = itemApps[item])
+                    items(apps.size, key = { item -> apps[item].app.packageName }) { item ->
+                        AppItem(item = apps[item])
                     }
                 }
             }
@@ -240,61 +270,264 @@ class AppListFragment(
         modifier: Modifier = Modifier,
         item: AppWithRules,
     ) {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
+        var showAppSettings = remember { mutableStateOf(false) }
+
+        Column {
             Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp)
+                    .clickable {
+                        navController.navigate(NavGraphs.EmergencyAccessGraph.route)
+                        showAppSettings.value = !showAppSettings.value
+                    },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                val map by appListViewModel.bitmapMap.collectAsState()
-                val imageBitmap = map[item.app.packageName]?.asImageBitmap()
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    val map by appListViewModel.bitmapMap.collectAsState()
+                    val imageBitmap = map[item.app.packageName]?.asImageBitmap()
 
-                // Check if the imageBitmap is null and display accordingly
-                // Display the image or a placeholder if the bitmap is null
-                if (imageBitmap != null) {
-                    Image(
-                        modifier = Modifier.size(34.dp),
-                        bitmap = imageBitmap,
-                        contentDescription = "",
+                    // Check if the imageBitmap is null and display accordingly
+                    // Display the image or a placeholder if the bitmap is null
+                    if (imageBitmap != null) {
+                        Image(
+                            modifier = Modifier.size(34.dp),
+                            bitmap = imageBitmap,
+                            contentDescription = "",
+                        )
+                    } else {
+                        Image(
+                            modifier = Modifier.size(34.dp),
+                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            contentDescription = ""
+                        )
+                    }
+
+                    Spacer(
+                        modifier = Modifier.width(8.dp)
                     )
-                } else {
-                    Image(
-                        modifier = Modifier.size(34.dp),
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                        contentDescription = ""
+                    Text(
+                        text = item.app.name ?: item.app.packageName,
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
-
-                Spacer(
-                    modifier = Modifier.width(8.dp)
-                )
-                Text(
-                    text = item.app.name ?: item.app.packageName,
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Checkbox(
+                        checked = item.app.enabled,
+                        onCheckedChange = {
+                            showAppSettings.value = !showAppSettings.value
+                            if(item.app.enabled) {
+                                appListViewModel.checkApp(item, !item.app.enabled)
+                            }
+                        }
+                    )
+                }
             }
-            Checkbox(
-                checked = item.app.enabled,
-                onCheckedChange = {
-                    appListViewModel.checkApp(item, !item.app.enabled)
-                }
-            )
+            if (showAppSettings.value) {
+                AppRuleManager(app = item, showAppSettings = showAppSettings)
+            }
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    private fun Loading(modifier: Modifier = Modifier) {
-        Box(
-            modifier = Modifier.fillMaxSize()
+    fun AppRuleManager(
+        modifier: Modifier = Modifier,
+        app: AppWithRules,
+        showAppSettings: MutableState<Boolean>
+    ) {
+        var timeLimitRule: Rule.TimeLimitRule? = null
+        var hourOfTheDayRangeRule: Rule.HourOfTheDayRangeRule? = null
+
+        for (rule in app.rules) {
+            when (rule) {
+                is Rule.HourOfTheDayRangeRule -> hourOfTheDayRangeRule = rule
+                is Rule.TimeLimitRule -> timeLimitRule = rule
+            }
+        }
+
+        val timePickerTimeLimitRuleState = rememberTimePickerState(
+            initialHour = formatSecondsToTime(timeLimitRule?.limitInSeconds).split(":")[0].toInt(),
+            initialMinute = formatSecondsToTime(timeLimitRule?.limitInSeconds).split(":")[1].toInt(),
+            is24Hour = true
+        )
+
+        var showTimePickerTimeLimitRule by remember {
+            mutableStateOf(false)
+        }
+
+        val timePickerStateFrom = rememberTimePickerState(
+            initialHour = hourOfTheDayRangeRule?.fromHour ?: 0,
+            initialMinute = hourOfTheDayRangeRule?.fromMinute ?: 0,
+            is24Hour = true
+        )
+        var showTimePickerFrom by remember { mutableStateOf(false) }
+
+        val timePickerStateTo = rememberTimePickerState(
+            initialHour = hourOfTheDayRangeRule?.toHour ?: 0,
+            initialMinute = hourOfTheDayRangeRule?.toMinute ?: 0,
+            is24Hour = true
+        )
+        var showTimePickerTo by remember { mutableStateOf(false) }
+
+        Column(
+            modifier = Modifier.fillMaxHeight(),
         ) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center)
+            Text(
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+                text = LocalContext.current.getString(R.string.about_time_limit_rule)
             )
+            Row(
+                modifier = Modifier
+                    .padding(end = 6.dp)
+                    .clickable { showTimePickerTimeLimitRule = !showTimePickerTimeLimitRule }
+                    .fillMaxWidth()
+                    .border(
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                        shape = MaterialTheme.shapes.small
+                    )
+                    .padding(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (showTimePickerTimeLimitRule) {
+                    Dialog(
+                        onDismissRequest = {
+                            showTimePickerTimeLimitRule = false
+                            appListViewModel.setTimeLimitRule(
+                                packageName = app.app.packageName,
+                                enabled = showAppSettings.value,
+                                hour = timePickerTimeLimitRuleState.hour,
+                                minute = timePickerTimeLimitRuleState.minute
+                            )
+                            if(!app.app.enabled) {
+                                appListViewModel.checkApp(app, !app.app.enabled)
+                            }
+                        }
+                    ) {
+                        TimePicker(state = timePickerTimeLimitRuleState)
+                    }
+                }
+                Icon(
+                    imageVector = Icons.Default.AccessTime,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .padding(start = 8.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = formatTime(
+                        timePickerTimeLimitRuleState.hour,
+                        timePickerTimeLimitRuleState.minute
+                    ),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+
+            }
+            Text(
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+                text = LocalContext.current.getString(R.string.about_hour_of_the_day_range_rule)
+            )
+            Row(
+                modifier = modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                Row(
+                    modifier = Modifier
+                        .padding(end = 6.dp)
+                        .clickable { showTimePickerFrom = !showTimePickerFrom }
+                        .weight(1f)
+                        .border(
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                            shape = MaterialTheme.shapes.small
+                        )
+                        .padding(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (showTimePickerFrom) {
+                        Dialog(
+                            onDismissRequest = {
+                                showTimePickerFrom = false
+                                if(!app.app.enabled) {
+                                    appListViewModel.checkApp(app, !app.app.enabled)
+                                }
+                            }
+                        ) {
+                            TimePicker(state = timePickerStateFrom)
+                        }
+                    }
+                    Icon(
+                        imageVector = Icons.Default.AccessTime,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(30.dp)
+                            .padding(start = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = formatTime(
+                            timePickerStateFrom.hour,
+                            timePickerStateFrom.minute
+                        ),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            shape = MaterialTheme.shapes.small
+                        )
+                        .size(34.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .padding(start = 6.dp)
+                        .clickable { showTimePickerTo = !showTimePickerTo }
+                        .weight(1f)
+                        .border(
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                            shape = MaterialTheme.shapes.small
+                        )
+                        .padding(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (showTimePickerTo) {
+                        Dialog(
+                            onDismissRequest = {
+                                showTimePickerTo = false
+                                if(!app.app.enabled) {
+                                    appListViewModel.checkApp(app, !app.app.enabled)
+                                }
+                            }
+                        ) {
+                            TimePicker(state = timePickerStateTo)
+                        }
+                    }
+                    Icon(
+                        imageVector = Icons.Default.AccessTime,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(30.dp)
+                            .padding(start = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = formatTime(timePickerStateTo.hour, timePickerStateTo.minute),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+            }
         }
     }
 }

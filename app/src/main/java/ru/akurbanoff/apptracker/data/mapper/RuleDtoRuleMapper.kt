@@ -22,8 +22,10 @@ class RuleDtoRuleMapper @Inject constructor() {
                     id = rule.id,
                     enabled = rule.enabled,
                     packageName = rule.packageName,
-                    from = rule.params[FROM].toString().toInt(),
-                    to = rule.params[TO].toString().toInt(),
+                    fromHour = rule.params[FROM].toString().toInt(),
+                    fromMinute = 0,
+                    toHour = rule.params[TO].toString().toInt(),
+                    toMinute = 0
                 )
             }
         }

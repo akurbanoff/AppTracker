@@ -15,8 +15,8 @@ class RuleRuleDtoMapper @Inject constructor() {
             }
 
             is Rule.HourOfTheDayRangeRule -> {
-                params[FROM] = rule.from
-                params[TO] = rule.to
+                params[FROM] = rule.fromHour
+                params[TO] = rule.toHour
                 RuleType.HOUR_OF_THE_DAY_RANGE_RULE
             }
         }
