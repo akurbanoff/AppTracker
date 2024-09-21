@@ -1,6 +1,8 @@
 package ru.akurbanoff.apptracker.domain.model
 
 import androidx.compose.runtime.Immutable
+import java.util.Calendar
+import java.util.Date
 
 @Immutable
 sealed class Rule(
@@ -26,9 +28,34 @@ sealed class Rule(
         val fromHour: Int,
         val fromMinute: Int,
         val toHour: Int,
-        val toMinute: Int
+        val toMinute: Int,
     ) : Rule(id, enabled, packageName, condition = { params ->
-        val current = params[0] as Int
-        (current >= fromHour) && (current <= toHour)
+
+        val currentDate = Date()
+        val calendar = Calendar.getInstance().apply {
+            time = currentDate
+        }
+
+        var dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+
+        val startCalendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, fromHour)
+            set(Calendar.DAY_OF_WEEK, dayOfWeek)
+            set(Calendar.MINUTE, fromMinute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        if ((fromHour >= toHour) && (fromMinute >= toMinute)) ++dayOfWeek
+
+        val endCalendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, toHour)
+            set(Calendar.DAY_OF_WEEK, dayOfWeek)
+            set(Calendar.MINUTE, toMinute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        calendar.after(startCalendar) && calendar.before(endCalendar)
     })
 }

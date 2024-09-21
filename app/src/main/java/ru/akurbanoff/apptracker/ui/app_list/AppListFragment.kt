@@ -19,15 +19,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -49,10 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -70,10 +64,6 @@ import ru.akurbanoff.apptracker.ui.navigation.NavGraphs
 import ru.akurbanoff.apptracker.ui.utils.LifeScreen
 import ru.akurbanoff.apptracker.ui.utils.formatSecondsToTime
 import ru.akurbanoff.apptracker.ui.utils.formatTime
-import java.text.SimpleDateFormat
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-import java.util.Date
 
 class AppListFragment(
     private val navController: NavHostController,
@@ -322,7 +312,7 @@ class AppListFragment(
                         checked = item.app.enabled,
                         onCheckedChange = {
                             showAppSettings.value = !showAppSettings.value
-                            if(item.app.enabled) {
+                            if (item.app.enabled) {
                                 appListViewModel.checkApp(item, !item.app.enabled)
                             }
                         }
@@ -340,7 +330,7 @@ class AppListFragment(
     fun AppRuleManager(
         modifier: Modifier = Modifier,
         app: AppWithRules,
-        showAppSettings: MutableState<Boolean>
+        showAppSettings: MutableState<Boolean>,
     ) {
         var timeLimitRule: Rule.TimeLimitRule? = null
         var hourOfTheDayRangeRule: Rule.HourOfTheDayRangeRule? = null
@@ -405,7 +395,7 @@ class AppListFragment(
                                 hour = timePickerTimeLimitRuleState.hour,
                                 minute = timePickerTimeLimitRuleState.minute
                             )
-                            if(!app.app.enabled) {
+                            if (!app.app.enabled) {
                                 appListViewModel.checkApp(app, !app.app.enabled)
                             }
                         }
@@ -456,9 +446,16 @@ class AppListFragment(
                         Dialog(
                             onDismissRequest = {
                                 showTimePickerFrom = false
-                                if(!app.app.enabled) {
+                                if (!app.app.enabled) {
                                     appListViewModel.checkApp(app, !app.app.enabled)
                                 }
+                                // todo time picker 1
+                                appListViewModel.setHourOfTheDayRangeRule(
+                                    app.app.packageName,
+                                    true,
+                                    timePickerStateFrom.hour to timePickerStateFrom.minute,
+                                    null,
+                                )
                             }
                         ) {
                             TimePicker(state = timePickerStateFrom)
@@ -506,9 +503,15 @@ class AppListFragment(
                         Dialog(
                             onDismissRequest = {
                                 showTimePickerTo = false
-                                if(!app.app.enabled) {
+                                if (!app.app.enabled) {
                                     appListViewModel.checkApp(app, !app.app.enabled)
                                 }
+                                appListViewModel.setHourOfTheDayRangeRule(
+                                    app.app.packageName,
+                                    true,
+                                    null,
+                                    timePickerStateTo.hour to timePickerStateTo.minute,
+                                )
                             }
                         ) {
                             TimePicker(state = timePickerStateTo)

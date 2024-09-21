@@ -1,8 +1,13 @@
 package ru.akurbanoff.apptracker.data.mapper
 
+import ru.akurbanoff.apptracker.data.mapper.RuleDtoRuleMapper.Companion.FROM_HOUR
+import ru.akurbanoff.apptracker.data.mapper.RuleDtoRuleMapper.Companion.FROM_MINUTE
+import ru.akurbanoff.apptracker.data.mapper.RuleDtoRuleMapper.Companion.TO_HOUR
+import ru.akurbanoff.apptracker.data.mapper.RuleDtoRuleMapper.Companion.TO_MINUTE
 import ru.akurbanoff.apptracker.domain.model.Rule
 import ru.akurbanoff.apptracker.storage.dto.RuleDto
 import ru.akurbanoff.apptracker.storage.dto.RuleType
+import java.util.Calendar
 import javax.inject.Inject
 
 class RuleRuleDtoMapper @Inject constructor() {
@@ -15,8 +20,10 @@ class RuleRuleDtoMapper @Inject constructor() {
             }
 
             is Rule.HourOfTheDayRangeRule -> {
-                params[FROM] = rule.fromHour
-                params[TO] = rule.toHour
+                params[FROM_HOUR] = rule.fromHour
+                params[TO_HOUR] = rule.toHour
+                params[FROM_MINUTE] = rule.fromMinute
+                params[TO_MINUTE] = rule.toMinute
                 RuleType.HOUR_OF_THE_DAY_RANGE_RULE
             }
         }

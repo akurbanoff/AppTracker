@@ -23,7 +23,6 @@ import ru.akurbanoff.apptracker.domain.model.App
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
 import ru.akurbanoff.apptracker.domain.model.Rule
 import java.util.Random
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -68,6 +67,7 @@ class AppListViewModel @Inject constructor(
                             )
                         }
                     }
+
                     appsResult.isSuccess -> {
                         _state.update {
                             it.copy(
@@ -94,11 +94,12 @@ class AppListViewModel @Inject constructor(
     }
 
     private fun requestImagesFor(itemApps: List<AppWithRules>) {
+        val list = ArrayList(itemApps)
         if (imageJob != null) return
-        if (itemApps.size == bitmapMap.value.size) return
+        if (list.size == bitmapMap.value.size) return
 
         imageJob = viewModelScope.launch(Dispatchers.IO) {
-            for (itemApp in itemApps) {
+            for (itemApp in list) {
                 val packageManager = AppTrackerApplication.INSTANCE?.packageManager
                 val appIcon = packageManager?.getApplicationIcon(itemApp.app.packageName)?.toBitmap() ?: return@launch
                 _bitmapMap.value[itemApp.app.packageName] = appIcon
@@ -127,12 +128,42 @@ class AppListViewModel @Inject constructor(
     fun getIconFor(packageManager: PackageManager, app: App) =
         packageManager.getApplicationIcon(app.packageName).toBitmap()
 
-    fun setTimeLimitRule(packageName: String, enabled: Boolean, hour: Int, minute: Int){
+    fun setTimeLimitRule(packageName: String, enabled: Boolean, hour: Int, minute: Int) {
         val limitInSeconds = ((hour * 60) + minute) * 60
-        val rule = Rule.TimeLimitRule(id = Random().nextInt(), packageName = packageName, enabled = enabled, limitInSeconds = limitInSeconds)
+        val rule = Rule.TimeLimitRule(
+            id = Random(System.currentTimeMillis()).nextInt(),
+            packageName = packageName,
+            enabled = enabled,
+            limitInSeconds = limitInSeconds
+        )
         viewModelScope.launch(Dispatchers.IO) {
             appsRepository.addRule(rule)
         }
+    }
+
+    fun setHourOfTheDayRangeRule(
+        packageName: String,
+        enabled: Boolean,
+        from: Pair<Int, Int>?,
+        to: Pair<Int, Int>?,
+    ) = viewModelScope.launch(Dispatchers.IO) {
+
+        val existingRule = appsRepository.getRulesFor(packageName).firstOrNull { it is Rule.HourOfTheDayRangeRule }
+        var rule = existingRule as? Rule.HourOfTheDayRangeRule
+        if (rule == null) {
+            rule = Rule.HourOfTheDayRangeRule(
+                id = Random(System.currentTimeMillis()).nextInt(),
+                enabled = enabled,
+                packageName = packageName,
+                fromHour = 0,
+                fromMinute = 0,
+                toHour = 0,
+                toMinute = 0,
+            )
+        }
+        from?.let { rule = rule?.copy(fromHour = from.first, fromMinute = from.second) }
+        to?.let { rule = rule?.copy(toHour = to.first, toMinute = to.second) }
+        appsRepository.addRule(rule ?: return@launch)
     }
 
     data class AppListState(
