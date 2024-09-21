@@ -46,7 +46,13 @@ sealed class Rule(
             set(Calendar.MILLISECOND, 0)
         }
 
-        if ((fromHour >= toHour) && (fromMinute >= toMinute)) ++dayOfWeek
+        if ((fromHour >= toHour) && (fromMinute >= toMinute)) {
+            // Проверяем кейс когда юзер выбирает целый день впоть до часа и/или минуты
+            ++dayOfWeek
+        } else if (fromHour > toHour) {
+            // Проверяем кейс когда toHour это следующий день, но время правила не целый день
+            ++dayOfWeek
+        }
 
         val endCalendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, toHour)

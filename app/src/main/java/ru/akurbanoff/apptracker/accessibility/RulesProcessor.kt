@@ -26,13 +26,13 @@ class RulesProcessor @Inject constructor(
 
             for (rule in app.rules) {
                 val invoke = when (rule) {
-                    is Rule.TimeLimitRule -> rule.condition.invoke(arrayOf(appState.timeInApp))
+                    is Rule.TimeLimitRule -> false//rule.condition.invoke(arrayOf(appState.timeInApp))
                     is Rule.HourOfTheDayRangeRule -> {
                         rule.condition.invoke(arrayOf(now.hour, now.minute))
                     }
                 }
 
-                if (!invoke) onTriggered.invoke()
+                if (invoke) onTriggered.invoke()
             }
         }
     }

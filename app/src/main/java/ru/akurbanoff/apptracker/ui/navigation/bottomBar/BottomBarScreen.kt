@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.InsertChart
 import androidx.compose.material.icons.filled.InsertChartOutlined
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.ui.graphics.vector.ImageVector
 import ru.akurbanoff.apptracker.ui.navigation.NavGraphs
 
@@ -18,7 +19,7 @@ sealed class BottomBarScreen(
     data object AboutScreen : BottomBarScreen(
         NavGraphs.AboutGraph.route,
         Icons.Default.Info,
-        Icons.Default.Info,
+        Icons.Outlined.Info,
         NavGraphs.AboutGraph
     )
     data object AppListScreen : BottomBarScreen(
