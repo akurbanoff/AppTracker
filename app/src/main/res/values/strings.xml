@@ -21,7 +21,14 @@
     <!-- ServiceSettingsFragment -->
     <string name="service_settings">Настройки сервиса</string>
     <string name="is_notification_enabled">Включить уведомления от сервиса</string>
-    <string name="enable_control_using_app_in_browser">Разрешить контроль использования приложения в браузере</string>
+    <string name="enable_control_using_app_in_browser">Разрешить контроль использования приложений в браузере</string>
+    <string name="notify_before_close_apps">Предупреждать перед закрытием приложений</string>
+    <string name="enable_emergency_access">Разрешить экстренный доступ в приложения</string>
+    <string name="before">за</string>
+    <string name="minute">минут</string>
+    
+    <!-- EmergencyAccessFragment -->
+    <string name="expand_for">Продлить работу приложения на</string>
 
     <!-- AppListDetailsFragment -->
 <!--    <string name="about_time_limit_rule">Выберите то количество минут, на сколько будет ограничена длительность работы приложения</string>-->

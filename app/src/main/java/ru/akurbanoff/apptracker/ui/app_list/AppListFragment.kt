@@ -25,12 +25,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.ReportProblem
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.ReportProblem
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -111,16 +115,19 @@ class AppListFragment(
         amountOfEnabledApps: Int,
         isAppsFailure: Throwable?,
     ) {
-        Column(
+        Scaffold(
             modifier = modifier
                 .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            TopScreenPart(
-                isAllAppsEnabled = isAllAppsEnabled,
-                amountOfEnabledApps = amountOfEnabledApps
-            )
+                .padding(horizontal = 16.dp),
+            topBar = {
+                TopScreenPart(
+                    isAllAppsEnabled = isAllAppsEnabled,
+                    amountOfEnabledApps = amountOfEnabledApps
+                )
+            }
+        ) { padding ->
             AppList(
+                modifier = Modifier.padding(padding),
                 apps = apps,
                 isAppsFailure = isAppsFailure
             )
@@ -256,7 +263,7 @@ class AppListFragment(
             }
 
             else -> {
-                LazyColumn {
+                LazyColumn(modifier) {
                     items(apps.size, key = { item -> apps[item].app.packageName }) { item ->
                         AppItem(item = apps[item])
                     }
@@ -278,7 +285,6 @@ class AppListFragment(
                     .fillMaxWidth()
                     .padding(top = 12.dp)
                     .clickable {
-                        navController.navigate(NavGraphs.EmergencyAccessGraph.route)
                         showAppSettings.value = !showAppSettings.value
                     },
                 verticalAlignment = Alignment.CenterVertically,
@@ -318,6 +324,17 @@ class AppListFragment(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    if(item.app.enabled) {
+                        Icon(
+                            modifier = Modifier.clickable {
+                                navController.navigate(NavGraphs.EmergencyAccessGraph.route)
+                            },
+                            imageVector = Icons.Outlined.ReportProblem,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
                     Checkbox(
                         checked = item.app.enabled,
                         onCheckedChange = {

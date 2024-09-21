@@ -22,9 +22,14 @@
     <!-- ServiceSettingsFragment -->
     <string name="service_settings">Service settings</string>
     <string name="is_notification_enabled">Enable service notification</string>
-    <string name="enable_control_using_app_in_browser">Allow control over application usage in the browser</string>
+    <string name="enable_control_using_app_in_browser">Allow control over applications usage in the browser</string>
+    <string name="notify_before_close_apps">Notify before closing applications</string>
+    <string name="enable_emergency_access">Allow emergency access to applications</string>
+    <string name="before">in</string>
+    <string name="minute">minute</string>
 
+    <!-- EmergencyAccessFragment -->
+    <string name="expand_for">Extend the app\'s life</string>
 
-    <!-- AppListDetailsFragment -->
 
 </resources>

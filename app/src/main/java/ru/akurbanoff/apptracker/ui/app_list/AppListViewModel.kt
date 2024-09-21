@@ -129,10 +129,14 @@ class AppListViewModel @Inject constructor(
 
     fun setTimeLimitRule(packageName: String, enabled: Boolean, hour: Int, minute: Int){
         val limitInSeconds = ((hour * 60) + minute) * 60
-        val rule = Rule.TimeLimitRule(id = Random().nextInt(), packageName = packageName, enabled = enabled, limitInSeconds = limitInSeconds)
+        val rule = Rule.TimeLimitRule(id = Random(System.currentTimeMillis()).nextInt(), packageName = packageName, enabled = enabled, limitInSeconds = limitInSeconds)
         viewModelScope.launch(Dispatchers.IO) {
             appsRepository.addRule(rule)
         }
+    }
+
+    fun setHourOfTheDayRangeRule(packageName: String, enabled: Boolean, hour: Int, minute: Int){
+
     }
 
     data class AppListState(
