@@ -8,6 +8,7 @@ import androidx.room.withTransaction
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import ru.akurbanoff.apptracker.R
 import ru.akurbanoff.apptracker.data.mapper.AppAppDtoMapper
 import ru.akurbanoff.apptracker.data.mapper.AppDtoAppMapper
 import ru.akurbanoff.apptracker.data.mapper.AppStateAppStateDtoMapper
@@ -69,12 +70,17 @@ class AppsRepository @Inject constructor(
         return appDtoFlow.map { appDtos ->
             appDtos.map { appDto ->
                 val app = appDtoAppMapper.invoke(appDto, packageManager)
-                val rules = rulesDao.getRulesByPackage(app.packageName).map { ruleDtoRuleMapper.invoke(it) }
+                val rules = rulesDao.getRulesByPackage(app.packageName).map {
+                    ruleDtoRuleMapper.invoke(it)
+                }
                 AppWithRules(app, rules)
             }.filter {
+                val appTrackerName = context.getString(R.string.app_name)
+
+                val isNotAppTracker = it.app.name?.contains(appTrackerName) == false
                 val containsQuery = it.app.name?.contains(query, true) == true
                 val include = if (allApps) true else it.app.enabled
-                include && containsQuery
+                include && containsQuery && isNotAppTracker
             }
         }.map {
             cachedApps.clear()
@@ -126,8 +132,15 @@ class AppsRepository @Inject constructor(
     suspend fun getList(): List<AppWithRules> {
         return appsDao.getList().map { appDto ->
             val app = appDtoAppMapper.invoke(appDto, packageManager)
-            val rules = rulesDao.getRulesByPackage(app.packageName).map { ruleDtoRuleMapper.invoke(it) }
+            val rules = rulesDao.getRulesByPackage(app.packageName).map {
+                ruleDtoRuleMapper.invoke(it)
+            }
             AppWithRules(app, rules)
         }
     }
+
+    suspend fun getRulesFor(packageName: String): List<Rule> {
+        return rulesDao.getRulesByPackage(packageName).map { ruleDtoRuleMapper.invoke(it) }
+    }
+
 }
