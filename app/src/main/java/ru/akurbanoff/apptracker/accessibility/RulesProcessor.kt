@@ -22,11 +22,14 @@ class RulesProcessor @Inject constructor(
 
         apps.firstOrNull { it.app.packageName == currentAppPackageName }?.let { app ->
             if (!app.app.enabled) return@let
+            val now = LocalTime.now()
 
             for (rule in app.rules) {
                 val invoke = when (rule) {
                     is Rule.TimeLimitRule -> rule.condition.invoke(arrayOf(appState.timeInApp))
-                    is Rule.HourOfTheDayRangeRule -> rule.condition.invoke(arrayOf(LocalTime.now().hour))
+                    is Rule.HourOfTheDayRangeRule -> {
+                        rule.condition.invoke(arrayOf(now.hour, now.minute))
+                    }
                 }
 
                 if (!invoke) onTriggered.invoke()

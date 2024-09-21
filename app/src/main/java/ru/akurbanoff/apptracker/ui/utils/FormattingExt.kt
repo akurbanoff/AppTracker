@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Date
+import java.util.Locale
 
 fun formatTime(hour: Int, minute: Int): String {
     val formatter = DateTimeFormatter.ofPattern("HH:mm")

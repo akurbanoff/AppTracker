@@ -22,18 +22,20 @@ class RuleDtoRuleMapper @Inject constructor() {
                     id = rule.id,
                     enabled = rule.enabled,
                     packageName = rule.packageName,
-                    fromHour = rule.params[FROM].toString().toInt(),
-                    fromMinute = 0,
-                    toHour = rule.params[TO].toString().toInt(),
-                    toMinute = 0
+                    fromHour = rule.params[FROM_HOUR].toString().toInt(),
+                    fromMinute = rule.params[FROM_MINUTE].toString().toInt(),
+                    toHour = rule.params[TO_HOUR].toString().toInt(),
+                    toMinute = rule.params[TO_MINUTE].toString().toInt(),
                 )
             }
         }
     }
 
-    private companion object {
+     companion object {
         private const val LIMIT_IN_SECONDS = "limitInSeconds"
-        private const val FROM = "from"
-        private const val TO = "to"
+        const val FROM_HOUR = "from_hour"
+        const val TO_HOUR = "to_hour"
+        const val FROM_MINUTE = "from_minute"
+        const val TO_MINUTE = "to_minute"
     }
 }
