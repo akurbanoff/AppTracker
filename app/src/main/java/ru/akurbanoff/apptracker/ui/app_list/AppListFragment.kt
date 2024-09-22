@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,11 +16,14 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccessTime
@@ -33,6 +37,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -51,6 +57,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -79,10 +86,8 @@ class AppListFragment(
     fun Main() {
         appListViewModel = hiltViewModel()
         val state by appListViewModel.state.collectAsState()
-
-        BackHandler {
-            navController.popBackStack()
-        }
+        val isSearchEnabled = remember { mutableStateOf(false) }
+        val searchQuery = remember { mutableStateOf("") }
 
         LifeScreen(
             onResume = {
@@ -90,11 +95,20 @@ class AppListFragment(
             }
         )
 
+        BackHandler {
+            navController.popBackStack()
+            searchQuery.value = ""
+            appListViewModel.onSearch(query = searchQuery.value)
+            isSearchEnabled.value = false
+        }
+
         ScreenContent(
             apps = state.apps,
             isAllAppsEnabled = state.isAllAppsEnabled,
             amountOfEnabledApps = state.amountOfEnabledApps,
-            isAppsFailure = state.isAppsFailure
+            isAppsFailure = state.isAppsFailure,
+            isSearchEnabled = isSearchEnabled,
+            searchQuery = searchQuery
         )
     }
 
@@ -105,6 +119,8 @@ class AppListFragment(
         isAllAppsEnabled: Boolean,
         amountOfEnabledApps: Int,
         isAppsFailure: Throwable?,
+        isSearchEnabled: MutableState<Boolean>,
+        searchQuery: MutableState<String>
     ) {
         Scaffold(
             modifier = modifier
@@ -113,7 +129,9 @@ class AppListFragment(
             topBar = {
                 TopScreenPart(
                     isAllAppsEnabled = isAllAppsEnabled,
-                    amountOfEnabledApps = amountOfEnabledApps
+                    amountOfEnabledApps = amountOfEnabledApps,
+                    isSearchEnabled = isSearchEnabled,
+                    searchQuery = searchQuery
                 )
             }
         ) { padding ->
@@ -130,11 +148,12 @@ class AppListFragment(
         modifier: Modifier = Modifier,
         isAllAppsEnabled: Boolean,
         amountOfEnabledApps: Int,
+        isSearchEnabled: MutableState<Boolean>,
+        searchQuery: MutableState<String>
     ) {
         val context = LocalContext.current
-        var isSearchEnabled by remember { mutableStateOf(false) }
         val searchJob = remember { mutableStateOf<Job?>(null) }
-        val searchQuery = remember { mutableStateOf("") }
+
         Column(
             modifier = modifier
                 .fillMaxWidth()
@@ -146,16 +165,12 @@ class AppListFragment(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = context.getString(R.string.all_apps),
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                if (isSearchEnabled) {
+                if (isSearchEnabled.value) {
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 16.dp, end = 7.dp)
                             .clip(MaterialTheme.shapes.medium),
+                        singleLine = true,
                         trailingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Search,
@@ -163,7 +178,7 @@ class AppListFragment(
                                 modifier = Modifier
                                     .size(34.dp)
                                     .clickable {
-                                        isSearchEnabled = !isSearchEnabled
+                                        isSearchEnabled.value = !isSearchEnabled.value
                                         searchQuery.value = ""
                                         appListViewModel.onSearch(query = searchQuery.value)
                                     }
@@ -181,12 +196,20 @@ class AppListFragment(
                         colors = TextFieldDefaults.colors(
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                isSearchEnabled.value = false
+                            }
                         )
                     )
                 } else {
+                    Text(
+                        text = context.getString(R.string.all_apps),
+                        style = MaterialTheme.typography.headlineMedium
+                    )
                     Box(
                         modifier = Modifier
-                            .size(62.dp)
                             .align(Alignment.CenterVertically)
                     ) {
                         Icon(
@@ -194,9 +217,10 @@ class AppListFragment(
                             contentDescription = null,
                             modifier = Modifier
                                 .size(34.dp)
-                                .align(Alignment.Center)
                                 .clickable {
-                                    isSearchEnabled = !isSearchEnabled
+                                    isSearchEnabled.value = !isSearchEnabled.value
+                                    searchQuery.value = ""
+                                    appListViewModel.onSearch(query = searchQuery.value)
                                 }
                         )
                     }
@@ -315,7 +339,7 @@ class AppListFragment(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    if(item.app.enabled) {
+                    if (item.app.enabled) {
                         Icon(
                             modifier = Modifier.clickable {
                                 navController.navigate(NavGraphs.EmergencyAccessGraph.route)
