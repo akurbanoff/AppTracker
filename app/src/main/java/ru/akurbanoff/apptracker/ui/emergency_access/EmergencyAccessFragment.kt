@@ -57,6 +57,7 @@ import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import ru.akurbanoff.apptracker.R
+import ru.akurbanoff.apptracker.domain.model.App
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
 import ru.akurbanoff.apptracker.domain.model.Rule
 import ru.akurbanoff.apptracker.ui.utils.LifeScreen
@@ -65,19 +66,13 @@ import ru.akurbanoff.apptracker.ui.utils.formatTime
 
 class EmergencyAccessFragment(
     private val navController: NavHostController,
-    //private val app: AppWithRules
+    private val app: App
 ) {
-
     private lateinit var viewModel: EmergencyAccessViewModel
-    private var app: AppWithRules? = null
 
     @Composable
     fun Main(modifier: Modifier = Modifier) {
         viewModel = hiltViewModel<EmergencyAccessViewModel>()
-
-        val state by viewModel.state.collectAsState()
-
-        app = state.app
 
         BackHandler {
             navController.popBackStack()
@@ -85,7 +80,7 @@ class EmergencyAccessFragment(
 
         LifeScreen(
             onCreate = {
-                viewModel.getApps()
+                viewModel.requestImageFor(app)
             }
         )
 
@@ -155,7 +150,7 @@ class EmergencyAccessFragment(
         val context = LocalContext.current
         var notifyBeforeTime by remember { mutableStateOf("0") }
         val map by viewModel.bitmapMap.collectAsState()
-        val imageBitmap = map[app?.app?.packageName]?.asImageBitmap()
+        val imageBitmap = map[app.packageName]?.asImageBitmap()
 
         Column(
             modifier = modifier.padding(top = 24.dp),
@@ -179,12 +174,12 @@ class EmergencyAccessFragment(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
                     Text(
-                        text = app?.app?.name ?: "",
+                        text = app.name ?: "",
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.headlineMedium
                     )
-                    Text(text = app?.app?.packageName ?: "")
+                    Text(text = app.packageName)
                 }
             }
             Row(

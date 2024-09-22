@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kapt)
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -62,6 +63,8 @@ android {
 
 dependencies {
     with(libs) {
+        implementation(serializable)
+
         implementation(coil)
         implementation(gson)
         implementation(multidex)
