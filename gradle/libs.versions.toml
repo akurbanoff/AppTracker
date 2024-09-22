@@ -13,7 +13,7 @@ composeBom = "2024.04.01"
 multidex = "1.0.3"
 uiTextGoogleFonts = "1.6.8"
 composeUtil = "1.6.3"
-navigation = "2.7.7"
+navigation = "2.8.1"
 coroutines = "1.7.3"
 androidxCoreKtx = "1.12.0"
 androidxLifecycleKtx = "2.8.3"
@@ -22,6 +22,8 @@ hilt = "2.48"
 conopas-rv = "1.0.4"
 
 [libraries]
+
+serializable = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.0.0" }
 
 conopas-rv = { group = "com.canopas", name = "compose_recyclerview", version.ref = "conopas-rv" }
 coil = { group = "io.coil-kt", name = "coil-compose", version = "2.7.0" }

@@ -342,7 +342,7 @@ class AppListFragment(
                     if (item.app.enabled) {
                         Icon(
                             modifier = Modifier.clickable {
-                                navController.navigate(NavGraphs.EmergencyAccessGraph.route)
+                                navController.navigate(item.app)
                             },
                             imageVector = Icons.Outlined.ReportProblem,
                             contentDescription = null,

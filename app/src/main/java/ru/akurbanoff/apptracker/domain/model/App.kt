@@ -1,5 +1,9 @@
 package ru.akurbanoff.apptracker.domain.model
 
+import android.os.Parcelable
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class App(
     val packageName: String,
     val enabled: Boolean,
