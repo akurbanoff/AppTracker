@@ -166,6 +166,10 @@ class AppListViewModel @Inject constructor(
         appsRepository.addRule(rule ?: return@launch)
     }
 
+    fun saveUrl(url: String) {
+
+    }
+
     data class AppListState(
         val apps: List<AppWithRules> = emptyList(),
         val isAllAppsEnabled: Boolean = true,

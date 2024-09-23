@@ -22,11 +22,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.ReportProblem
 import androidx.compose.material.icons.filled.Search
@@ -34,7 +38,9 @@ import androidx.compose.material.icons.outlined.ReportProblem
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
@@ -60,8 +66,10 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.graphics.toColor
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.CoroutineScope
@@ -122,6 +130,8 @@ class AppListFragment(
         isSearchEnabled: MutableState<Boolean>,
         searchQuery: MutableState<String>
     ) {
+        val openDialogToAddUrl = remember { mutableStateOf(false) }
+
         Scaffold(
             modifier = modifier
                 .fillMaxSize()
@@ -133,6 +143,19 @@ class AppListFragment(
                     isSearchEnabled = isSearchEnabled,
                     searchQuery = searchQuery
                 )
+            },
+            floatingActionButton = {
+                FloatingActionButton(
+                    shape = CircleShape,
+                    onClick = {
+                        openDialogToAddUrl.value = true
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null
+                    )
+                }
             }
         ) { padding ->
             AppList(
@@ -140,6 +163,131 @@ class AppListFragment(
                 apps = apps,
                 isAppsFailure = isAppsFailure
             )
+        }
+
+        if(openDialogToAddUrl.value){
+            AddUrlDialog(Modifier, openDialogToAddUrl)
+        }
+    }
+
+    @Composable
+    fun AddUrlDialog(
+        modifier: Modifier = Modifier,
+        openDialogToAddUrl: MutableState<Boolean>
+    ) {
+        var urlName by remember {
+            mutableStateOf("")
+        }
+
+        var url by remember {
+            mutableStateOf("")
+        }
+
+        var isError by remember {
+            mutableStateOf(false)
+        }
+
+        val context = LocalContext.current
+
+        Dialog(
+            onDismissRequest = { openDialogToAddUrl.value = false }
+        ) {
+            Column(
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(16.dp)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.headlineSmall,
+                    text = context.getString(R.string.add_link_to_track)
+                )
+
+                Text(
+                    modifier = Modifier.padding(bottom = 12.dp),
+                    text = context.getString(R.string.add_link_to_track_description)
+                )
+
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = urlName,
+                    onValueChange = {
+                        urlName = it
+                    },
+                    label = {
+                        Text(
+                            text = context.getString(R.string.title)
+                        )
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    shape = AbsoluteRoundedCornerShape(
+                        topLeft = 8.dp,
+                        topRight = 8.dp
+                    )
+                )
+                TextField(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    value = url,
+                    onValueChange = {
+                        isError = false
+                        url = it
+                    },
+                    label = {
+                        Text(
+                            text = context.getString(R.string.link)
+                        )
+                    },
+                    isError = isError,
+                    supportingText = {
+                        if(isError) {
+                            Text(
+                                text = context.getString(R.string.link_error)
+                            )
+                        }
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    shape = AbsoluteRoundedCornerShape(
+                        bottomLeft = 8.dp,
+                        bottomRight = 8.dp
+                    ),
+                    trailingIcon = {
+                        if(url.isNotEmpty() && urlName.isNotEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(Color.Green.copy(alpha = 0.5f))
+                            ) {
+                                IconButton(
+                                    modifier = Modifier.size(38.dp),
+                                    onClick = {
+                                        val parsedUrl = parseUrl(url)
+                                        if(parsedUrl == null) isError = true
+
+                                        appListViewModel.saveUrl(url)
+                                        openDialogToAddUrl.value = false
+                                    }
+                                ){
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                        }
+                    }
+                )
+            }
         }
     }
 
@@ -161,7 +309,7 @@ class AppListFragment(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(60.dp),
+                    .height(40.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -573,6 +721,15 @@ class AppListFragment(
                     )
                 }
             }
+        }
+    }
+
+    private fun parseUrl(url: String) : String? {
+        return try {
+            val splitUrl = url.split("/")
+            splitUrl[0] + "//" + splitUrl[2]
+        } catch (e: Exception){
+            null
         }
     }
 }

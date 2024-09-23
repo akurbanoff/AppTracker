@@ -17,6 +17,11 @@
     <string name="amount_of_apps">Количество выбранных приложений</string>
     <string name="about_time_limit_rule">Выберите то количество часов и минут, на сколько будет ограничена длительность работы приложения в день</string>
     <string name="about_hour_of_the_day_range_rule">Выберите со скольки по скольки будет запрещен вход в приложение</string>
+    <string name="title">Название</string>
+    <string name="link">Ссылка</string>
+    <string name="add_link_to_track">Добавить ссылку</string>
+    <string name="add_link_to_track_description">Добавьте ссылку, которую сервис будет отслеживать в браузере</string>
+    <string name="link_error">Вы ввели неправильную ссылку</string>
 
     <!-- ServiceSettingsFragment -->
     <string name="service_settings">Настройки сервиса</string>

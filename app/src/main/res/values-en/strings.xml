@@ -18,6 +18,11 @@
     <string name="amount_of_apps">Number of selected applications</string>
     <string name="about_time_limit_rule">Select the number of hours and minutes for which the application will be limited to run in a day</string>
     <string name="about_hour_of_the_day_range_rule">Select from what time to what time the entry to the application will be prohibited</string>
+    <string name="title">Title</string>
+    <string name="link">Link</string>
+    <string name="add_link_to_track">Add link</string>
+    <string name="add_link_to_track_description">Add a link that the service will track in the browser</string>
+    <string name="link_error">You have entered the wrong link</string>
 
     <!-- ServiceSettingsFragment -->
     <string name="service_settings">Service settings</string>
