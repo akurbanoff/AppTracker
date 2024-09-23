@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -272,7 +273,10 @@ class AppListFragment(
                                     modifier = Modifier.size(38.dp),
                                     onClick = {
                                         val parsedUrl = parseUrl(url)
-                                        if(parsedUrl == null) isError = true
+                                        if(parsedUrl == null) {
+                                            isError = true
+                                            return@IconButton
+                                        }
 
                                         appListViewModel.saveUrl(url)
                                         openDialogToAddUrl.value = false
@@ -309,7 +313,7 @@ class AppListFragment(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(40.dp),
+                    .height(70.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {

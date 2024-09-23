@@ -10,6 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import ru.akurbanoff.apptracker.storage.AppTrackerDatabase
 import ru.akurbanoff.apptracker.storage.dao.AppStatesDao
 import ru.akurbanoff.apptracker.storage.dao.AppsDao
+import ru.akurbanoff.apptracker.storage.dao.LinkDao
 import ru.akurbanoff.apptracker.storage.dao.RulesDao
 import javax.inject.Singleton
 
@@ -36,6 +37,8 @@ class DatabaseModule {
     @Singleton
     fun provideAppStatsDao(database: AppTrackerDatabase): AppStatesDao = database.appStatsDao()
 
+    @[Provides Singleton]
+    fun provideLinkDao(database: AppTrackerDatabase): LinkDao = database.linkDao()
 
     private companion object {
         private const val DB_NAME = "database"
