@@ -7,6 +7,7 @@ import javax.inject.Inject
 class LinkDtoToLinkMapper @Inject constructor() {
     operator fun invoke(linkDto: LinkDto) = Link(
         title = linkDto.title,
-        link = linkDto.link
+        link = linkDto.link,
+        enabled = linkDto.enabled
     )
 }

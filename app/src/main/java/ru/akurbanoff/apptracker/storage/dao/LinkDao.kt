@@ -21,4 +21,8 @@ interface LinkDao {
 
     @Query("DELETE FROM linkdto WHERE link = :link")
     suspend fun delete(link: String)
+
+    @Query("UPDATE linkdto SET enabled = :enabled WHERE link = :link")
+    suspend fun checkApp(link: String, enabled: Boolean)
+
 }

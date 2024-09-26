@@ -59,6 +59,7 @@ import coil.request.ImageRequest
 import ru.akurbanoff.apptracker.R
 import ru.akurbanoff.apptracker.domain.model.App
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
+import ru.akurbanoff.apptracker.domain.model.Link
 import ru.akurbanoff.apptracker.domain.model.Rule
 import ru.akurbanoff.apptracker.ui.utils.LifeScreen
 import ru.akurbanoff.apptracker.ui.utils.formatSecondsToTime
@@ -66,7 +67,8 @@ import ru.akurbanoff.apptracker.ui.utils.formatTime
 
 class EmergencyAccessFragment(
     private val navController: NavHostController,
-    private val app: App
+    private val app: App?,
+    private val link: Link?
 ) {
     private lateinit var viewModel: EmergencyAccessViewModel
 
@@ -80,7 +82,7 @@ class EmergencyAccessFragment(
 
         LifeScreen(
             onCreate = {
-                viewModel.requestImageFor(app)
+                if(app != null) viewModel.requestImageFor(app)
             }
         )
 
@@ -150,7 +152,7 @@ class EmergencyAccessFragment(
         val context = LocalContext.current
         var notifyBeforeTime by remember { mutableStateOf("0") }
         val map by viewModel.bitmapMap.collectAsState()
-        val imageBitmap = map[app.packageName]?.asImageBitmap()
+        val imageBitmap = map[app?.packageName]?.asImageBitmap()
 
         Column(
             modifier = modifier.padding(top = 24.dp),
@@ -174,12 +176,12 @@ class EmergencyAccessFragment(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
                     Text(
-                        text = app.name ?: "",
+                        text = app?.name ?: "",
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.headlineMedium
                     )
-                    Text(text = app.packageName)
+                    Text(text = app?.packageName ?: "")
                 }
             }
             Row(

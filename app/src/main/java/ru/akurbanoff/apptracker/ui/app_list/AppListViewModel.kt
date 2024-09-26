@@ -19,8 +19,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.akurbanoff.apptracker.AppTrackerApplication
 import ru.akurbanoff.apptracker.data.repository.AppsRepository
+import ru.akurbanoff.apptracker.data.repository.LinkRepository
 import ru.akurbanoff.apptracker.domain.model.App
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
+import ru.akurbanoff.apptracker.domain.model.Link
+import ru.akurbanoff.apptracker.domain.model.LinkWithRules
 import ru.akurbanoff.apptracker.domain.model.Rule
 import java.util.Random
 import javax.inject.Inject
@@ -28,6 +31,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AppListViewModel @Inject constructor(
     private val appsRepository: AppsRepository,
+    private val linkRepository: LinkRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(AppListState())
     val state: StateFlow<AppListState> = _state
@@ -36,6 +40,7 @@ class AppListViewModel @Inject constructor(
     private val searchQueryState = MutableStateFlow("")
 
     private var apps: List<AppWithRules> = listOf()
+    private var links: List<LinkWithRules> = listOf()
 
     private var imageJob: Job? = null
 
@@ -81,6 +86,22 @@ class AppListViewModel @Inject constructor(
         }
     }
 
+    fun getLinks(){
+        viewModelScope.launch(Dispatchers.IO) {
+            linkRepository.getAllLinks().map {
+                Result.success(it)
+            }.catch {
+                Result.failure<Throwable>(it)
+            }.collectLatest { linkResult ->
+                when{
+                    linkResult.isSuccess -> {
+                        updateLinkState(linkResult.getOrNull() ?: emptyList())
+                    }
+                }
+            }
+        }
+    }
+
     fun switchAllApps() {
         val isAllAppsEnabled = !_state.value.isAllAppsEnabled
         shouldShowAllApps.value = isAllAppsEnabled
@@ -90,6 +111,12 @@ class AppListViewModel @Inject constructor(
     fun checkApp(itemApp: AppWithRules, enabled: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             appsRepository.checkApp(itemApp.app.packageName, enabled)
+        }
+    }
+
+    fun checkLink(itemLink: LinkWithRules, enabled: Boolean){
+        viewModelScope.launch(Dispatchers.IO) {
+            linkRepository.checkLink(itemLink.link.link, enabled)
         }
     }
 
@@ -121,6 +148,13 @@ class AppListViewModel @Inject constructor(
         )
     }
 
+    private fun updateLinkState(links: List<LinkWithRules>) = _state.update {
+        this.links = links
+        it.copy(
+            links = links.sortedBy { link -> link.link.title }
+        )
+    }
+
     fun onSearch(query: String) {
         searchQueryState.value = query
     }
@@ -134,7 +168,8 @@ class AppListViewModel @Inject constructor(
             id = Random(System.currentTimeMillis()).nextInt(),
             packageName = packageName,
             enabled = enabled,
-            limitInSeconds = limitInSeconds
+            limitInSeconds = limitInSeconds,
+            link = "",
         )
         viewModelScope.launch(Dispatchers.IO) {
             appsRepository.addRule(rule)
@@ -155,6 +190,7 @@ class AppListViewModel @Inject constructor(
                 id = Random(System.currentTimeMillis()).nextInt(),
                 enabled = enabled,
                 packageName = packageName,
+                link = "",
                 fromHour = 0,
                 fromMinute = 0,
                 toHour = 0,
@@ -166,12 +202,15 @@ class AppListViewModel @Inject constructor(
         appsRepository.addRule(rule ?: return@launch)
     }
 
-    fun saveUrl(url: String) {
-
+    fun createLink(title: String, link: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            linkRepository.createLink(Link(title, link, false))
+        }
     }
 
     data class AppListState(
         val apps: List<AppWithRules> = emptyList(),
+        val links: List<LinkWithRules> = emptyList(),
         val isAllAppsEnabled: Boolean = true,
         var amountOfEnabledApps: Int = 0,
         var isAppsFailure: Throwable? = null,

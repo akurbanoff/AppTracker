@@ -31,6 +31,7 @@ class RuleRuleDtoMapper @Inject constructor() {
             id = rule.id,
             enabled = rule.enabled,
             packageName = rule.packageName,
+            link = rule.link,
             params = params,
             type = type
         )

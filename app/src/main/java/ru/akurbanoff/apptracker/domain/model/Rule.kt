@@ -9,14 +9,16 @@ sealed class Rule(
     open val id: Int,
     open val enabled: Boolean,
     open val packageName: String,
+    open val link: String,
     open val condition: (params: Array<Any>) -> Boolean,
 ) {
     data class TimeLimitRule(
         override val id: Int,
         override val enabled: Boolean,
         override val packageName: String,
+        override val link: String,
         val limitInSeconds: Int,
-    ) : Rule(id, enabled, packageName, condition = { params ->
+    ) : Rule(id, enabled, packageName, link, condition = { params ->
         val currentLimit = params[0] as Int
         currentLimit < limitInSeconds
     })
@@ -25,12 +27,12 @@ sealed class Rule(
         override val id: Int,
         override val enabled: Boolean,
         override val packageName: String,
+        override val link: String,
         val fromHour: Int,
         val fromMinute: Int,
         val toHour: Int,
         val toMinute: Int,
-    ) : Rule(id, enabled, packageName, condition = { params ->
-
+    ) : Rule(id, enabled, packageName, link, condition = {
         val currentDate = Date()
         val calendar = Calendar.getInstance().apply {
             time = currentDate

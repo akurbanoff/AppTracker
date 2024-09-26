@@ -9,5 +9,6 @@ class LinkToDtoMapper @Inject constructor() {
     operator fun invoke(link: Link): LinkDto = LinkDto(
         title = link.title,
         link = link.link,
+        enabled = link.enabled
     )
 }

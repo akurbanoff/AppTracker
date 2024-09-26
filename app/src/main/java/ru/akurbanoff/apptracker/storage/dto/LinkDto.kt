@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class LinkDto(
     @PrimaryKey
     val link: String,
-    val title: String
+    val title: String,
+    val enabled: Boolean
 )

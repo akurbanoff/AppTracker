@@ -23,6 +23,8 @@
     <string name="add_link_to_track">Add link</string>
     <string name="add_link_to_track_description">Add a link that the service will track in the browser</string>
     <string name="link_error">You have entered the wrong link</string>
+    <string name="apps">Apps</string>
+    <string name="links">Links</string>
 
     <!-- ServiceSettingsFragment -->
     <string name="service_settings">Service settings</string>

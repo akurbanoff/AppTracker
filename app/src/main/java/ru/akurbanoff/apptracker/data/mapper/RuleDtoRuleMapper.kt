@@ -13,6 +13,7 @@ class RuleDtoRuleMapper @Inject constructor() {
                     id = rule.id,
                     enabled = rule.enabled,
                     packageName = rule.packageName,
+                    link = rule.link,
                     limitInSeconds = rule.params[LIMIT_IN_SECONDS].toString().toInt(),
                 )
             }
@@ -22,6 +23,7 @@ class RuleDtoRuleMapper @Inject constructor() {
                     id = rule.id,
                     enabled = rule.enabled,
                     packageName = rule.packageName,
+                    link = rule.link,
                     fromHour = rule.params[FROM_HOUR].toString().toInt(),
                     fromMinute = rule.params[FROM_MINUTE].toString().toInt(),
                     toHour = rule.params[TO_HOUR].toString().toInt(),

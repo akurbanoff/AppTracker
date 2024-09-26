@@ -2,6 +2,7 @@ package ru.akurbanoff.apptracker.ui.app_list
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
@@ -33,6 +35,7 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ReportProblem
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.ReportProblem
@@ -80,6 +83,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.akurbanoff.apptracker.R
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
+import ru.akurbanoff.apptracker.domain.model.LinkWithRules
 import ru.akurbanoff.apptracker.domain.model.Rule
 import ru.akurbanoff.apptracker.ui.navigation.NavGraphs
 import ru.akurbanoff.apptracker.ui.utils.LifeScreen
@@ -101,6 +105,7 @@ class AppListFragment(
         LifeScreen(
             onResume = {
                 appListViewModel.getApps()
+                appListViewModel.getLinks()
             }
         )
 
@@ -113,6 +118,7 @@ class AppListFragment(
 
         ScreenContent(
             apps = state.apps,
+            links = state.links,
             isAllAppsEnabled = state.isAllAppsEnabled,
             amountOfEnabledApps = state.amountOfEnabledApps,
             isAppsFailure = state.isAppsFailure,
@@ -125,6 +131,7 @@ class AppListFragment(
     private fun ScreenContent(
         modifier: Modifier = Modifier,
         apps: List<AppWithRules>,
+        links: List<LinkWithRules>,
         isAllAppsEnabled: Boolean,
         amountOfEnabledApps: Int,
         isAppsFailure: Throwable?,
@@ -162,6 +169,7 @@ class AppListFragment(
             AppList(
                 modifier = Modifier.padding(padding),
                 apps = apps,
+                links = links,
                 isAppsFailure = isAppsFailure
             )
         }
@@ -278,7 +286,7 @@ class AppListFragment(
                                             return@IconButton
                                         }
 
-                                        appListViewModel.saveUrl(url)
+                                        appListViewModel.createLink(urlName, url)
                                         openDialogToAddUrl.value = false
                                     }
                                 ){
@@ -417,13 +425,20 @@ class AppListFragment(
         }
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     private fun AppList(
         modifier: Modifier = Modifier,
         apps: List<AppWithRules>,
+        links: List<LinkWithRules>,
         isAppsFailure: Throwable?,
     ) {
-        val lazyListState = rememberLazyListState()
+        val isAppsListVisible = remember {
+            mutableStateOf(true)
+        }
+        val isLinkListVisible = remember {
+            mutableStateOf(true)
+        }
         when {
             isAppsFailure != null -> {
 
@@ -431,8 +446,18 @@ class AppListFragment(
 
             else -> {
                 LazyColumn(modifier) {
-                    items(apps.size, key = { item -> apps[item].app.packageName }) { item ->
-                        AppItem(item = apps[item])
+                    if(isLinkListVisible.value){
+                        items(links.size, key = { item -> links[item].link.link}){ item ->
+                            LinkItem(item = links[item])
+                        }
+                    }
+                    stickyHeader {
+                        AppsStickyHeader(isAppsListVisible)
+                    }
+                    if (isAppsListVisible.value) {
+                        items(apps.size, key = { item -> apps[item].app.packageName }) { item ->
+                            AppItem(item = apps[item])
+                        }
                     }
                 }
             }
@@ -728,12 +753,107 @@ class AppListFragment(
         }
     }
 
-    private fun parseUrl(url: String) : String? {
-        return try {
-            val splitUrl = url.split("/")
-            splitUrl[0] + "//" + splitUrl[2]
-        } catch (e: Exception){
-            null
+    @Composable
+    private fun AppsStickyHeader(isAppsListVisible: MutableState<Boolean>){
+        val context = LocalContext.current
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+                .padding(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = context.getString(R.string.apps),
+                style = MaterialTheme.typography.headlineSmall
+            )
+            Icon(
+                modifier = Modifier
+                    .clickable { isAppsListVisible.value = !isAppsListVisible.value }
+                    .size(40.dp),
+                imageVector = if (isAppsListVisible.value)
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight
+                else
+                    Icons.Default.KeyboardArrowDown,
+                contentDescription = null
+            )
         }
+    }
+
+    @Composable
+    fun LinkItem(
+        modifier: Modifier = Modifier,
+        item: LinkWithRules
+    ) {
+        var showAppSettings = remember { mutableStateOf(false) }
+
+        Column {
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp)
+                    .clickable {
+                        showAppSettings.value = !showAppSettings.value
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Image(
+                        modifier = Modifier.size(34.dp),
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = ""
+                    )
+
+                    Spacer(
+                        modifier = Modifier.width(8.dp)
+                    )
+                    Text(
+                        text = item.link.title,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (item.link.enabled) {
+                        Icon(
+                            modifier = Modifier.clickable {
+                                navController.navigate(item.link)
+                            },
+                            imageVector = Icons.Outlined.ReportProblem,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Checkbox(
+                        checked = item.link.enabled,
+                        onCheckedChange = {
+                            showAppSettings.value = !showAppSettings.value
+                            if (item.link.enabled) {
+                                appListViewModel.checkLink(item, !item.link.enabled)
+                            }
+                        }
+                    )
+                }
+            }
+            if (showAppSettings.value) {
+                //AppRuleManager(app = item, showAppSettings = showAppSettings)
+            }
+        }
+    }
+
+    private fun parseUrl(url: String) : String? {
+        val regex = Regex("^(https?://)?(www\\.)?([^/]+)")
+        val matchResult = regex.find(url)
+
+        return matchResult?.groups?.get(3)?.value ?: ""
     }
 }

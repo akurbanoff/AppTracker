@@ -22,6 +22,8 @@
     <string name="add_link_to_track">Добавить ссылку</string>
     <string name="add_link_to_track_description">Добавьте ссылку, которую сервис будет отслеживать в браузере</string>
     <string name="link_error">Вы ввели неправильную ссылку</string>
+    <string name="apps">Приложения</string>
+    <string name="links">Ссылки</string>
 
     <!-- ServiceSettingsFragment -->
     <string name="service_settings">Настройки сервиса</string>
