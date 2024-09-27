@@ -42,6 +42,16 @@ class LinkRepository @Inject constructor(
         }
     }
 
+    suspend fun getList(): List<LinkWithRules> {
+        return linkDao.getList().map { linkDto ->
+            val link = linkDtoToLinkMapper.invoke(linkDto)
+            val rules = rulesDao.getRulesByLink(link.link).map {
+                ruleDtoRuleMapper.invoke(it)
+            }
+            LinkWithRules(link, rules)
+        }
+    }
+
     suspend fun createLink(link: Link){
         linkDao.insertOrUpdate(linkToDtoMapper.invoke(link))
     }
