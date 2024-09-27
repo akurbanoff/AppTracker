@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -168,20 +169,27 @@ class EmergencyAccessFragment(
                         contentDescription = "",
                     )
                 }
+                if(link != null){
+                    Image(
+                        modifier = Modifier.size(150.dp),
+                        imageVector = Icons.Default.Link,
+                        contentDescription = "",
+                    )
+                }
                 Column (
                     modifier = Modifier
                         .fillMaxHeight(0.1f)
-                        .padding(start = 16.dp),
+                        .weight(1f),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
                     Text(
-                        text = app?.name ?: "",
+                        text = app?.name ?: link?.title ?: "",
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.headlineMedium
                     )
-                    Text(text = app?.packageName ?: "")
+                    Text(text = app?.packageName ?: link?.link ?: "")
                 }
             }
             Row(

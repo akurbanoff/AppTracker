@@ -176,6 +176,20 @@ class AppListViewModel @Inject constructor(
         }
     }
 
+    fun setLinkTimeLimitRule(link: String, enabled: Boolean, hour: Int, minute: Int){
+        val limitInSeconds = ((hour * 60) + minute) * 60
+        val rule = Rule.TimeLimitRule(
+            id = Random(System.currentTimeMillis()).nextInt(),
+            packageName = "",
+            enabled = enabled,
+            limitInSeconds = limitInSeconds,
+            link = link,
+        )
+        viewModelScope.launch(Dispatchers.IO) {
+            appsRepository.addRule(rule)
+        }
+    }
+
     fun setHourOfTheDayRangeRule(
         packageName: String,
         enabled: Boolean,
@@ -200,6 +214,26 @@ class AppListViewModel @Inject constructor(
         from?.let { rule = rule?.copy(fromHour = from.first, fromMinute = from.second) }
         to?.let { rule = rule?.copy(toHour = to.first, toMinute = to.second) }
         appsRepository.addRule(rule ?: return@launch)
+    }
+
+    fun setLinkHourOfTheDayRangeRule(link: String, enabled: Boolean, from: Pair<Int, Int>?, to: Pair<Int, Int>?) = viewModelScope.launch(Dispatchers.IO) {
+        val existingRule = linkRepository.getRulesFor(link).firstOrNull { it is Rule.HourOfTheDayRangeRule }
+        var rule = existingRule as? Rule.HourOfTheDayRangeRule
+        if (rule == null) {
+            rule = Rule.HourOfTheDayRangeRule(
+                id = Random(System.currentTimeMillis()).nextInt(),
+                enabled = enabled,
+                packageName = "",
+                link = link,
+                fromHour = 0,
+                fromMinute = 0,
+                toHour = 0,
+                toMinute = 0,
+            )
+        }
+        from?.let { rule = rule?.copy(fromHour = from.first, fromMinute = from.second) }
+        to?.let { rule = rule?.copy(toHour = to.first, toMinute = to.second) }
+        linkRepository.addRule(rule ?: return@launch)
     }
 
     fun createLink(title: String, link: String) {

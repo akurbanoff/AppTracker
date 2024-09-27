@@ -5,9 +5,11 @@ import kotlinx.coroutines.flow.map
 import ru.akurbanoff.apptracker.data.mapper.LinkDtoToLinkMapper
 import ru.akurbanoff.apptracker.data.mapper.LinkToDtoMapper
 import ru.akurbanoff.apptracker.data.mapper.RuleDtoRuleMapper
+import ru.akurbanoff.apptracker.data.mapper.RuleRuleDtoMapper
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
 import ru.akurbanoff.apptracker.domain.model.Link
 import ru.akurbanoff.apptracker.domain.model.LinkWithRules
+import ru.akurbanoff.apptracker.domain.model.Rule
 import ru.akurbanoff.apptracker.storage.AppTrackerDatabase
 import ru.akurbanoff.apptracker.storage.dao.LinkDao
 import ru.akurbanoff.apptracker.storage.dao.RulesDao
@@ -18,6 +20,7 @@ class LinkRepository @Inject constructor(
     private val linkDao: LinkDao,
     private val rulesDao: RulesDao,
     private val ruleDtoRuleMapper: RuleDtoRuleMapper,
+    private val ruleRuleDtoMapper: RuleRuleDtoMapper,
     private val linkToDtoMapper: LinkToDtoMapper,
     private val linkDtoToLinkMapper: LinkDtoToLinkMapper
 ) {
@@ -45,5 +48,13 @@ class LinkRepository @Inject constructor(
 
     suspend fun checkLink(link: String, enabled: Boolean) {
         linkDao.checkApp(link, enabled)
+    }
+
+    suspend fun getRulesFor(link: String): List<Rule> {
+        return rulesDao.getRulesByLink(link).map { ruleDtoRuleMapper.invoke(it) }
+    }
+
+    suspend fun addRule(rule: Rule) {
+        rulesDao.insertOrUpdateRule(ruleRuleDtoMapper.invoke(rule))
     }
 }

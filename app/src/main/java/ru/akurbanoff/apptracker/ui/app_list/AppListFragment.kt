@@ -33,9 +33,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.ReportProblem
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.ReportProblem
@@ -445,11 +447,17 @@ class AppListFragment(
             }
 
             else -> {
-                LazyColumn(modifier) {
+                LazyColumn(modifier.padding(top = 12.dp)) {
+                    stickyHeader { 
+                        LinksStickyHeader(isLinkListVisible = isLinkListVisible)
+                    }
                     if(isLinkListVisible.value){
                         items(links.size, key = { item -> links[item].link.link}){ item ->
                             LinkItem(item = links[item])
                         }
+                    }
+                    item { 
+                        Spacer(modifier = Modifier.padding(top = 12.dp))
                     }
                     stickyHeader {
                         AppsStickyHeader(isAppsListVisible)
@@ -762,7 +770,7 @@ class AppListFragment(
                 .fillMaxWidth()
                 .clip(MaterialTheme.shapes.medium)
                 .background(MaterialTheme.colorScheme.secondaryContainer)
-                .padding(6.dp),
+                .padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -775,6 +783,36 @@ class AppListFragment(
                     .clickable { isAppsListVisible.value = !isAppsListVisible.value }
                     .size(40.dp),
                 imageVector = if (isAppsListVisible.value)
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight
+                else
+                    Icons.Default.KeyboardArrowDown,
+                contentDescription = null
+            )
+        }
+    }
+
+    @Composable
+    private fun LinksStickyHeader(isLinkListVisible: MutableState<Boolean>){
+        val context = LocalContext.current
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+                .padding(horizontal = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = context.getString(R.string.links),
+                style = MaterialTheme.typography.headlineSmall
+            )
+            Icon(
+                modifier = Modifier
+                    .clickable { isLinkListVisible.value = !isLinkListVisible.value }
+                    .size(40.dp),
+                imageVector = if (isLinkListVisible.value)
                     Icons.AutoMirrored.Filled.KeyboardArrowRight
                 else
                     Icons.Default.KeyboardArrowDown,
@@ -807,10 +845,9 @@ class AppListFragment(
                 ) {
                     Image(
                         modifier = Modifier.size(34.dp),
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                        contentDescription = ""
+                        imageVector = Icons.Default.Link,
+                        contentDescription = null
                     )
-
                     Spacer(
                         modifier = Modifier.width(8.dp)
                     )
@@ -845,7 +882,216 @@ class AppListFragment(
                 }
             }
             if (showAppSettings.value) {
-                //AppRuleManager(app = item, showAppSettings = showAppSettings)
+                LinkRuleManager(link = item, showAppSettings = showAppSettings)
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun LinkRuleManager(
+        modifier: Modifier = Modifier,
+        link: LinkWithRules,
+        showAppSettings: MutableState<Boolean>,
+    ) {
+        var timeLimitRule: Rule.TimeLimitRule? = null
+        var hourOfTheDayRangeRule: Rule.HourOfTheDayRangeRule? = null
+
+        for (rule in link.rules) {
+            when (rule) {
+                is Rule.HourOfTheDayRangeRule -> hourOfTheDayRangeRule = rule
+                is Rule.TimeLimitRule -> timeLimitRule = rule
+            }
+        }
+
+        val timePickerTimeLimitRuleState = rememberTimePickerState(
+            initialHour = formatSecondsToTime(timeLimitRule?.limitInSeconds).split(":")[0].toInt(),
+            initialMinute = formatSecondsToTime(timeLimitRule?.limitInSeconds).split(":")[1].toInt(),
+            is24Hour = true
+        )
+
+        var showTimePickerTimeLimitRule by remember {
+            mutableStateOf(false)
+        }
+
+        val timePickerStateFrom = rememberTimePickerState(
+            initialHour = hourOfTheDayRangeRule?.fromHour ?: 0,
+            initialMinute = hourOfTheDayRangeRule?.fromMinute ?: 0,
+            is24Hour = true
+        )
+        var showTimePickerFrom by remember { mutableStateOf(false) }
+
+        val timePickerStateTo = rememberTimePickerState(
+            initialHour = hourOfTheDayRangeRule?.toHour ?: 0,
+            initialMinute = hourOfTheDayRangeRule?.toMinute ?: 0,
+            is24Hour = true
+        )
+        var showTimePickerTo by remember { mutableStateOf(false) }
+
+        Column(
+            modifier = Modifier.fillMaxHeight(),
+        ) {
+            Text(
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+                text = LocalContext.current.getString(R.string.about_time_limit_rule)
+            )
+            Row(
+                modifier = Modifier
+                    .padding(end = 6.dp)
+                    .clickable { showTimePickerTimeLimitRule = !showTimePickerTimeLimitRule }
+                    .fillMaxWidth()
+                    .border(
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                        shape = MaterialTheme.shapes.small
+                    )
+                    .padding(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (showTimePickerTimeLimitRule) {
+                    Dialog(
+                        onDismissRequest = {
+                            showTimePickerTimeLimitRule = false
+                            appListViewModel.setLinkTimeLimitRule(
+                                link = link.link.link,
+                                enabled = showAppSettings.value,
+                                hour = timePickerTimeLimitRuleState.hour,
+                                minute = timePickerTimeLimitRuleState.minute
+                            )
+                            if (!link.link.enabled) {
+                                appListViewModel.checkLink(link, !link.link.enabled)
+                            }
+                        }
+                    ) {
+                        TimePicker(state = timePickerTimeLimitRuleState)
+                    }
+                }
+                Icon(
+                    imageVector = Icons.Default.AccessTime,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .padding(start = 8.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = formatTime(
+                        timePickerTimeLimitRuleState.hour,
+                        timePickerTimeLimitRuleState.minute
+                    ),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+
+            }
+            Text(
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+                text = LocalContext.current.getString(R.string.about_hour_of_the_day_range_rule)
+            )
+            Row(
+                modifier = modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                Row(
+                    modifier = Modifier
+                        .padding(end = 6.dp)
+                        .clickable { showTimePickerFrom = !showTimePickerFrom }
+                        .weight(1f)
+                        .border(
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                            shape = MaterialTheme.shapes.small
+                        )
+                        .padding(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (showTimePickerFrom) {
+                        Dialog(
+                            onDismissRequest = {
+                                showTimePickerFrom = false
+                                if (!link.link.enabled) {
+                                    appListViewModel.checkLink(link, !link.link.enabled)
+                                }
+                                // todo time picker 1
+                                appListViewModel.setLinkHourOfTheDayRangeRule(
+                                    link.link.link,
+                                    true,
+                                    timePickerStateFrom.hour to timePickerStateFrom.minute,
+                                    null,
+                                )
+                            }
+                        ) {
+                            TimePicker(state = timePickerStateFrom)
+                        }
+                    }
+                    Icon(
+                        imageVector = Icons.Default.AccessTime,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(30.dp)
+                            .padding(start = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = formatTime(
+                            timePickerStateFrom.hour,
+                            timePickerStateFrom.minute
+                        ),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            shape = MaterialTheme.shapes.small
+                        )
+                        .size(34.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .padding(start = 6.dp)
+                        .clickable { showTimePickerTo = !showTimePickerTo }
+                        .weight(1f)
+                        .border(
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                            shape = MaterialTheme.shapes.small
+                        )
+                        .padding(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (showTimePickerTo) {
+                        Dialog(
+                            onDismissRequest = {
+                                showTimePickerTo = false
+                                if (!link.link.enabled) {
+                                    appListViewModel.checkLink(link, !link.link.enabled)
+                                }
+                                appListViewModel.setLinkHourOfTheDayRangeRule(
+                                    link.link.link,
+                                    true,
+                                    null,
+                                    timePickerStateTo.hour to timePickerStateTo.minute,
+                                )
+                            }
+                        ) {
+                            TimePicker(state = timePickerStateTo)
+                        }
+                    }
+                    Icon(
+                        imageVector = Icons.Default.AccessTime,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(30.dp)
+                            .padding(start = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = formatTime(timePickerStateTo.hour, timePickerStateTo.minute),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
             }
         }
     }
