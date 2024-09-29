@@ -21,18 +21,10 @@ import javax.inject.Singleton
 )
 @Singleton
 interface AppComponent {
-//    val appsRepository: AppsRepository
-
-    val serviceSettingsViewModel: ServiceSettingsViewModel
-
     @Component.Factory
     interface Factory {
         fun create(
             @BindsInstance context: Context,
         ): AppComponent
     }
-}
-
-fun getApplicationComponent(context: Context): AppComponent {
-    return (context.applicationContext as AppTrackerApplication).appComponent
 }

@@ -35,7 +35,9 @@ class AccessibilityEngine @Inject constructor(
     fun processEvent(service: AccessibilityService, event: AccessibilityEvent) {
         val source = event.source ?: return
         val currentAppPackageName = source.packageName.toString()
+        val currentLink = source.text.toString()
 
+        timerTask.link = currentLink
         timerTask.packageName = currentAppPackageName
         rulesProcessor.processRules(currentAppPackageName) {
             notifications.displayNotification(
@@ -44,6 +46,11 @@ class AccessibilityEngine @Inject constructor(
                 R.drawable.ic_launcher_background
             )
             service.minimizeCurrentApp()
+        }
+
+        rulesProcessor.processLinkRules(currentLink){
+            // TODO: Определиться как мы будем работать со ссылками и добавить нотификацию
+            service.minimizeCurrentLink()
         }
     }
 
@@ -54,18 +61,33 @@ class AccessibilityEngine @Inject constructor(
         performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME)
     }
 
+    private fun AccessibilityService.minimizeCurrentLink() {
+        // TODO: Добавить событие на закрытие ссылки
+    }
+
     private inner class Task : java.util.TimerTask() {
 
         @Volatile
         var secondsInApp = 0
+
+        @Volatile
+        var secondsInLink = 0
+
         var packageName: String? = null
             set(value) {
                 onPackageNameUpdate(value)
                 field = value
             }
 
+        var link: String? = null
+            set(value) {
+                onLinkUpdate(value)
+                field = value
+            }
+
         override fun run() {
             secondsInApp += 1
+            secondsInLink += 1
             updateTime()
         }
 
@@ -75,9 +97,16 @@ class AccessibilityEngine @Inject constructor(
                 secondsInApp = 0
             }
         }
+
+        private fun onLinkUpdate(newValue: String?) {
+            if(link != newValue){
+                updateTime()
+                secondsInLink = 0
+            }
+        }
     }
 
     private fun Task.updateTime() {
-        rulesProcessor.registerInAppTime(packageName ?: return, secondsInApp)
+        rulesProcessor.registerInAppTime(packageName ?: link ?: return, secondsInApp)
     }
 }

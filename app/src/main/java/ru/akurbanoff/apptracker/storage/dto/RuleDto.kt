@@ -10,6 +10,7 @@ data class RuleDto(
     val type: RuleType,
     val enabled: Boolean = false,
     val packageName: String,
+    val link: String,
     val params: Map<String, Any>,
 )
 

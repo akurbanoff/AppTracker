@@ -12,6 +12,9 @@ interface RulesDao {
     @Query("SELECT * FROM `ruledto` WHERE packageName = :packageName")
     suspend fun getRulesByPackage(packageName: String): List<RuleDto>
 
+    @Query("SELECT * FROM `ruledto` WHERE link = :link")
+    suspend fun getRulesByLink(link: String): List<RuleDto>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdateRule(rule: RuleDto)
 

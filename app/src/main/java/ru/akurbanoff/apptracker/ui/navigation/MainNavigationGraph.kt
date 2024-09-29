@@ -29,7 +29,7 @@ fun MainNavigationGraph(modifier: Modifier = Modifier) {
         }
     ) { padding ->
         NavHost(
-            modifier = Modifier.padding(padding),
+            modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
             startDestination = NavGraphs.ServiceSettingsGraph.route,
             navController = navigator
         ) {

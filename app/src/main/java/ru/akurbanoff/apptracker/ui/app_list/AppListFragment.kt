@@ -2,6 +2,7 @@ package ru.akurbanoff.apptracker.ui.app_list
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,25 +17,36 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.ReportProblem
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.ReportProblem
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
@@ -60,8 +72,10 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.graphics.toColor
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.CoroutineScope
@@ -71,6 +85,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.akurbanoff.apptracker.R
 import ru.akurbanoff.apptracker.domain.model.AppWithRules
+import ru.akurbanoff.apptracker.domain.model.LinkWithRules
 import ru.akurbanoff.apptracker.domain.model.Rule
 import ru.akurbanoff.apptracker.ui.navigation.NavGraphs
 import ru.akurbanoff.apptracker.ui.utils.LifeScreen
@@ -92,6 +107,7 @@ class AppListFragment(
         LifeScreen(
             onResume = {
                 appListViewModel.getApps()
+                appListViewModel.getLinks()
             }
         )
 
@@ -104,6 +120,7 @@ class AppListFragment(
 
         ScreenContent(
             apps = state.apps,
+            links = state.links,
             isAllAppsEnabled = state.isAllAppsEnabled,
             amountOfEnabledApps = state.amountOfEnabledApps,
             isAppsFailure = state.isAppsFailure,
@@ -116,12 +133,15 @@ class AppListFragment(
     private fun ScreenContent(
         modifier: Modifier = Modifier,
         apps: List<AppWithRules>,
+        links: List<LinkWithRules>,
         isAllAppsEnabled: Boolean,
         amountOfEnabledApps: Int,
         isAppsFailure: Throwable?,
         isSearchEnabled: MutableState<Boolean>,
         searchQuery: MutableState<String>
     ) {
+        val openDialogToAddUrl = remember { mutableStateOf(false) }
+
         Scaffold(
             modifier = modifier
                 .fillMaxSize()
@@ -133,13 +153,155 @@ class AppListFragment(
                     isSearchEnabled = isSearchEnabled,
                     searchQuery = searchQuery
                 )
+            },
+            floatingActionButton = {
+                FloatingActionButton(
+                    shape = CircleShape,
+                    onClick = {
+                        openDialogToAddUrl.value = true
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null
+                    )
+                }
             }
         ) { padding ->
             AppList(
                 modifier = Modifier.padding(padding),
                 apps = apps,
+                links = links,
                 isAppsFailure = isAppsFailure
             )
+        }
+
+        if(openDialogToAddUrl.value){
+            AddUrlDialog(Modifier, openDialogToAddUrl)
+        }
+    }
+
+    @Composable
+    fun AddUrlDialog(
+        modifier: Modifier = Modifier,
+        openDialogToAddUrl: MutableState<Boolean>
+    ) {
+        var urlName by remember {
+            mutableStateOf("")
+        }
+
+        var url by remember {
+            mutableStateOf("")
+        }
+
+        var isError by remember {
+            mutableStateOf(false)
+        }
+
+        val context = LocalContext.current
+
+        Dialog(
+            onDismissRequest = { openDialogToAddUrl.value = false }
+        ) {
+            Column(
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(16.dp)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.headlineSmall,
+                    text = context.getString(R.string.add_link_to_track)
+                )
+
+                Text(
+                    modifier = Modifier.padding(bottom = 12.dp),
+                    text = context.getString(R.string.add_link_to_track_description)
+                )
+
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = urlName,
+                    onValueChange = {
+                        urlName = it
+                    },
+                    label = {
+                        Text(
+                            text = context.getString(R.string.title)
+                        )
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    shape = AbsoluteRoundedCornerShape(
+                        topLeft = 8.dp,
+                        topRight = 8.dp
+                    )
+                )
+                TextField(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    value = url,
+                    onValueChange = {
+                        isError = false
+                        url = it
+                    },
+                    label = {
+                        Text(
+                            text = context.getString(R.string.link)
+                        )
+                    },
+                    isError = isError,
+                    supportingText = {
+                        if(isError) {
+                            Text(
+                                text = context.getString(R.string.link_error)
+                            )
+                        }
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    shape = AbsoluteRoundedCornerShape(
+                        bottomLeft = 8.dp,
+                        bottomRight = 8.dp
+                    ),
+                    trailingIcon = {
+                        if(url.isNotEmpty() && urlName.isNotEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(Color.Green.copy(alpha = 0.5f))
+                            ) {
+                                IconButton(
+                                    modifier = Modifier.size(38.dp),
+                                    onClick = {
+                                        val parsedUrl = parseUrl(url)
+                                        if(parsedUrl == null) {
+                                            isError = true
+                                            return@IconButton
+                                        }
+
+                                        appListViewModel.createLink(urlName, url)
+                                        openDialogToAddUrl.value = false
+                                    }
+                                ){
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                        }
+                    }
+                )
+            }
         }
     }
 
@@ -161,7 +323,7 @@ class AppListFragment(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(60.dp),
+                    .height(70.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -265,22 +427,45 @@ class AppListFragment(
         }
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     private fun AppList(
         modifier: Modifier = Modifier,
         apps: List<AppWithRules>,
+        links: List<LinkWithRules>,
         isAppsFailure: Throwable?,
     ) {
-        val lazyListState = rememberLazyListState()
+        val isAppsListVisible = remember {
+            mutableStateOf(true)
+        }
+        val isLinkListVisible = remember {
+            mutableStateOf(true)
+        }
         when {
             isAppsFailure != null -> {
 
             }
 
             else -> {
-                LazyColumn(modifier) {
-                    items(apps.size, key = { item -> apps[item].app.packageName }) { item ->
-                        AppItem(item = apps[item])
+                LazyColumn(modifier.padding(top = 12.dp)) {
+                    stickyHeader { 
+                        LinksStickyHeader(isLinkListVisible = isLinkListVisible)
+                    }
+                    if(isLinkListVisible.value){
+                        items(links.size, key = { item -> links[item].link.link}){ item ->
+                            LinkItem(item = links[item])
+                        }
+                    }
+                    item { 
+                        Spacer(modifier = Modifier.padding(top = 12.dp))
+                    }
+                    stickyHeader {
+                        AppsStickyHeader(isAppsListVisible)
+                    }
+                    if (isAppsListVisible.value) {
+                        items(apps.size, key = { item -> apps[item].app.packageName }) { item ->
+                            AppItem(item = apps[item])
+                        }
                     }
                 }
             }
@@ -574,5 +759,347 @@ class AppListFragment(
                 }
             }
         }
+    }
+
+    @Composable
+    private fun AppsStickyHeader(isAppsListVisible: MutableState<Boolean>){
+        val context = LocalContext.current
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+                .padding(horizontal = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = context.getString(R.string.apps),
+                style = MaterialTheme.typography.headlineSmall
+            )
+            Icon(
+                modifier = Modifier
+                    .clickable { isAppsListVisible.value = !isAppsListVisible.value }
+                    .size(40.dp),
+                imageVector = if (isAppsListVisible.value)
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight
+                else
+                    Icons.Default.KeyboardArrowDown,
+                contentDescription = null
+            )
+        }
+    }
+
+    @Composable
+    private fun LinksStickyHeader(isLinkListVisible: MutableState<Boolean>){
+        val context = LocalContext.current
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+                .padding(horizontal = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = context.getString(R.string.links),
+                style = MaterialTheme.typography.headlineSmall
+            )
+            Icon(
+                modifier = Modifier
+                    .clickable { isLinkListVisible.value = !isLinkListVisible.value }
+                    .size(40.dp),
+                imageVector = if (isLinkListVisible.value)
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight
+                else
+                    Icons.Default.KeyboardArrowDown,
+                contentDescription = null
+            )
+        }
+    }
+
+    @Composable
+    fun LinkItem(
+        modifier: Modifier = Modifier,
+        item: LinkWithRules
+    ) {
+        var showAppSettings = remember { mutableStateOf(false) }
+
+        Column {
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp)
+                    .clickable {
+                        showAppSettings.value = !showAppSettings.value
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Image(
+                        modifier = Modifier.size(34.dp),
+                        imageVector = Icons.Default.Link,
+                        contentDescription = null
+                    )
+                    Spacer(
+                        modifier = Modifier.width(8.dp)
+                    )
+                    Text(
+                        text = item.link.title,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (item.link.enabled) {
+                        Icon(
+                            modifier = Modifier.clickable {
+                                navController.navigate(item.link)
+                            },
+                            imageVector = Icons.Outlined.ReportProblem,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Checkbox(
+                        checked = item.link.enabled,
+                        onCheckedChange = {
+                            showAppSettings.value = !showAppSettings.value
+                            if (item.link.enabled) {
+                                appListViewModel.checkLink(item, !item.link.enabled)
+                            }
+                        }
+                    )
+                }
+            }
+            if (showAppSettings.value) {
+                LinkRuleManager(link = item, showAppSettings = showAppSettings)
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun LinkRuleManager(
+        modifier: Modifier = Modifier,
+        link: LinkWithRules,
+        showAppSettings: MutableState<Boolean>,
+    ) {
+        var timeLimitRule: Rule.TimeLimitRule? = null
+        var hourOfTheDayRangeRule: Rule.HourOfTheDayRangeRule? = null
+
+        for (rule in link.rules) {
+            when (rule) {
+                is Rule.HourOfTheDayRangeRule -> hourOfTheDayRangeRule = rule
+                is Rule.TimeLimitRule -> timeLimitRule = rule
+            }
+        }
+
+        val timePickerTimeLimitRuleState = rememberTimePickerState(
+            initialHour = formatSecondsToTime(timeLimitRule?.limitInSeconds).split(":")[0].toInt(),
+            initialMinute = formatSecondsToTime(timeLimitRule?.limitInSeconds).split(":")[1].toInt(),
+            is24Hour = true
+        )
+
+        var showTimePickerTimeLimitRule by remember {
+            mutableStateOf(false)
+        }
+
+        val timePickerStateFrom = rememberTimePickerState(
+            initialHour = hourOfTheDayRangeRule?.fromHour ?: 0,
+            initialMinute = hourOfTheDayRangeRule?.fromMinute ?: 0,
+            is24Hour = true
+        )
+        var showTimePickerFrom by remember { mutableStateOf(false) }
+
+        val timePickerStateTo = rememberTimePickerState(
+            initialHour = hourOfTheDayRangeRule?.toHour ?: 0,
+            initialMinute = hourOfTheDayRangeRule?.toMinute ?: 0,
+            is24Hour = true
+        )
+        var showTimePickerTo by remember { mutableStateOf(false) }
+
+        Column(
+            modifier = Modifier.fillMaxHeight(),
+        ) {
+            Text(
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+                text = LocalContext.current.getString(R.string.about_time_limit_rule)
+            )
+            Row(
+                modifier = Modifier
+                    .padding(end = 6.dp)
+                    .clickable { showTimePickerTimeLimitRule = !showTimePickerTimeLimitRule }
+                    .fillMaxWidth()
+                    .border(
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                        shape = MaterialTheme.shapes.small
+                    )
+                    .padding(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (showTimePickerTimeLimitRule) {
+                    Dialog(
+                        onDismissRequest = {
+                            showTimePickerTimeLimitRule = false
+                            appListViewModel.setLinkTimeLimitRule(
+                                link = link.link.link,
+                                enabled = showAppSettings.value,
+                                hour = timePickerTimeLimitRuleState.hour,
+                                minute = timePickerTimeLimitRuleState.minute
+                            )
+                            if (!link.link.enabled) {
+                                appListViewModel.checkLink(link, !link.link.enabled)
+                            }
+                        }
+                    ) {
+                        TimePicker(state = timePickerTimeLimitRuleState)
+                    }
+                }
+                Icon(
+                    imageVector = Icons.Default.AccessTime,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .padding(start = 8.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = formatTime(
+                        timePickerTimeLimitRuleState.hour,
+                        timePickerTimeLimitRuleState.minute
+                    ),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+
+            }
+            Text(
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+                text = LocalContext.current.getString(R.string.about_hour_of_the_day_range_rule)
+            )
+            Row(
+                modifier = modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                Row(
+                    modifier = Modifier
+                        .padding(end = 6.dp)
+                        .clickable { showTimePickerFrom = !showTimePickerFrom }
+                        .weight(1f)
+                        .border(
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                            shape = MaterialTheme.shapes.small
+                        )
+                        .padding(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (showTimePickerFrom) {
+                        Dialog(
+                            onDismissRequest = {
+                                showTimePickerFrom = false
+                                if (!link.link.enabled) {
+                                    appListViewModel.checkLink(link, !link.link.enabled)
+                                }
+                                // todo time picker 1
+                                appListViewModel.setLinkHourOfTheDayRangeRule(
+                                    link.link.link,
+                                    true,
+                                    timePickerStateFrom.hour to timePickerStateFrom.minute,
+                                    null,
+                                )
+                            }
+                        ) {
+                            TimePicker(state = timePickerStateFrom)
+                        }
+                    }
+                    Icon(
+                        imageVector = Icons.Default.AccessTime,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(30.dp)
+                            .padding(start = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = formatTime(
+                            timePickerStateFrom.hour,
+                            timePickerStateFrom.minute
+                        ),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            shape = MaterialTheme.shapes.small
+                        )
+                        .size(34.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .padding(start = 6.dp)
+                        .clickable { showTimePickerTo = !showTimePickerTo }
+                        .weight(1f)
+                        .border(
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                            shape = MaterialTheme.shapes.small
+                        )
+                        .padding(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (showTimePickerTo) {
+                        Dialog(
+                            onDismissRequest = {
+                                showTimePickerTo = false
+                                if (!link.link.enabled) {
+                                    appListViewModel.checkLink(link, !link.link.enabled)
+                                }
+                                appListViewModel.setLinkHourOfTheDayRangeRule(
+                                    link.link.link,
+                                    true,
+                                    null,
+                                    timePickerStateTo.hour to timePickerStateTo.minute,
+                                )
+                            }
+                        ) {
+                            TimePicker(state = timePickerStateTo)
+                        }
+                    }
+                    Icon(
+                        imageVector = Icons.Default.AccessTime,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(30.dp)
+                            .padding(start = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = formatTime(timePickerStateTo.hour, timePickerStateTo.minute),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+            }
+        }
+    }
+
+    private fun parseUrl(url: String) : String? {
+        val regex = Regex("^(https?://)?(www\\.)?([^/]+)")
+        val matchResult = regex.find(url)
+
+        return matchResult?.groups?.get(3)?.value ?: ""
     }
 }

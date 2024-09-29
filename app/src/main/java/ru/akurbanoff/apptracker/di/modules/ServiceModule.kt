@@ -10,6 +10,7 @@ import ru.akurbanoff.apptracker.domain.Notifications
 import ru.akurbanoff.apptracker.accessibility.AccessibilityEngine
 import ru.akurbanoff.apptracker.accessibility.RulesProcessor
 import ru.akurbanoff.apptracker.data.repository.AppsRepository
+import ru.akurbanoff.apptracker.data.repository.LinkRepository
 import javax.inject.Singleton
 
 @Module
@@ -23,8 +24,8 @@ class ServiceModule {
 
     @Provides
     @Singleton
-    fun provideRulesProcessor(appsRepository: AppsRepository): RulesProcessor {
-        return RulesProcessor(appsRepository)
+    fun provideRulesProcessor(appsRepository: AppsRepository, linkRepository: LinkRepository): RulesProcessor {
+        return RulesProcessor(appsRepository, linkRepository)
     }
 
     @Provides
